@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>OREX — As ferramentas das grandes, na tua equipa</title>
-<meta name="description" content="OREX junta orçamentação, BIM, fornecedores, obra, financeiro e fiscalização num só lugar, com IA — para uma equipa pequena produzir como as grandes. Programa-piloto: um ano grátis." />
+<meta name="description" content="OREX junta orçamentação, BIM, fornecedores, obra, financeiro e fiscalização num só lugar, com IA — para uma equipa pequena produzir como as grandes. Programa-piloto: 6 meses grátis." />
 <!-- Formulario sem servidor (abre o email). Ligar form#betaForm a um servico para receber candidaturas. Figura = ilustracao SVG. -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -200,6 +200,30 @@
   .titleblock .brandcell .logo{height:20px;margin-bottom:12px;}
   .titleblock .v.mono{font-family:"JetBrains Mono",monospace;font-weight:500;font-size:0.86rem;}
 
+  /* EVOLUÇÃO — produto vivo + registo de versões */
+  .evo{display:grid;grid-template-columns:0.82fr 1.18fr;gap:52px;align-items:start;}
+  .evo .now{border:1px solid var(--ink);background:var(--paper-2);padding:30px 30px 26px;}
+  .evo .now .rel{font-family:"JetBrains Mono",monospace;font-size:0.66rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--steel);}
+  .evo .now .big{font-family:"Archivo Expanded","Archivo",sans-serif;font-weight:900;font-size:clamp(2.6rem,5vw,3.6rem);line-height:0.95;letter-spacing:-0.02em;margin:8px 0 4px;}
+  .evo .now .big .u{color:var(--steel);font-size:1.05rem;letter-spacing:0;}
+  .evo .now .sub{font-family:"JetBrains Mono",monospace;font-size:0.72rem;color:var(--steel);}
+  .evo .now .split{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);margin-top:22px;}
+  .evo .now .split div{background:var(--paper-2);padding:15px 16px;}
+  .evo .now .split .k{font-family:"JetBrains Mono",monospace;font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--steel);margin-bottom:6px;}
+  .evo .now .split .n{font-family:"Archivo Expanded","Archivo",sans-serif;font-weight:900;font-size:1.5rem;line-height:1;}
+  .evo .caps{margin-top:22px;}
+  .evo .caps .lbl{font-family:"JetBrains Mono",monospace;font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--steel);margin-bottom:12px;}
+  .vlog{font-family:"JetBrains Mono",monospace;font-size:0.82rem;border:1px solid var(--line);background:var(--paper-2);max-height:none;}
+  .vlog .row{display:grid;grid-template-columns:58px 1fr auto;gap:16px;align-items:baseline;padding:11px 18px;border-top:1px solid var(--line-2);}
+  .vlog .row:first-child{border-top:none;}
+  .vlog .row .v{color:var(--ink);font-weight:600;}
+  .vlog .row .d{color:var(--ink-2);white-space:normal;}
+  .vlog .row .dt{color:var(--steel);font-size:0.72rem;white-space:nowrap;}
+  .vlog .row.cur{background:var(--ink);}
+  .vlog .row.cur .v,.vlog .row.cur .d,.vlog .row.cur .dt{color:var(--paper);}
+  .vlog .row.cur .dt{color:#9a9a90;}
+  .vlog-note{font-family:"JetBrains Mono",monospace;font-size:0.72rem;color:var(--steel);margin-top:12px;}
+
   .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1);}
   .reveal.in{opacity:1;transform:none;}
   .draw{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:draw 1.3s ease forwards;}
@@ -208,7 +232,7 @@
   @media (max-width:960px){
     .wrap{padding:0 30px;}
     .hero{min-height:0;display:block;padding:34px 0;}
-    .hero-grid,.target,.offer-card,.mod.feature,.band{grid-template-columns:1fr;}
+    .hero-grid,.target,.offer-card,.mod.feature,.band,.evo{grid-template-columns:1fr;}
     .plate{height:auto;} .plate svg{height:auto;}
     .modules,.ai-grid,.values{grid-template-columns:1fr 1fr;}
     .band .diag{border-left:none;border-top:1px solid var(--line-2);padding-left:0;padding-top:24px;max-width:360px;}
@@ -243,6 +267,7 @@
       <a href="#modulos">O que faz</a>
       <a href="#porque">Porquê</a>
       <a href="#paraquem">Para quem</a>
+      <a href="#evolucao">Evolução</a>
       <a class="cta-nav btn btn-primary" href="#beta">Candidatar</a>
     </div>
   </div>
@@ -255,7 +280,7 @@
       <h1>As ferramentas das grandes,<br><span class="u">na tua equipa.</span></h1>
       <p class="lead">Junta tudo o que uma obra precisa num só lugar e põe a IA a trabalhar por ti — para uma equipa pequena produzir como as grandes, sem contratar mais gente.</p>
       <div class="hero-cta">
-        <a href="#beta" class="btn btn-primary">Ser dos primeiros — 1 ano grátis <span class="arrow">&rarr;</span></a>
+        <a href="#beta" class="btn btn-primary">Ser dos primeiros — 6 meses grátis <span class="arrow">&rarr;</span></a>
         <a href="#modulos" class="btn btn-ghost">Ver o que faz</a>
       </div>
       <div class="hero-note"><span class="dot"></span> Feito para empresas de construção de 1 a 8 milhões.</div>
@@ -372,7 +397,7 @@
       <div class="metric"><div class="val exp">1</div><div class="dim"><span class="tk"></span><span class="ln"></span><span class="tk"></span></div><div class="cap">Uma só plataforma</div></div>
       <div class="metric"><div class="val exp">IA</div><div class="dim"><span class="tk"></span><span class="ln"></span><span class="tk"></span></div><div class="cap">Em cada passo</div></div>
       <div class="metric"><div class="val exp">3<span class="u"> SO</span></div><div class="dim"><span class="tk"></span><span class="ln"></span><span class="tk"></span></div><div class="cap">Windows · Linux · macOS</div></div>
-      <div class="metric"><div class="val exp">12<span class="u"> meses</span></div><div class="dim"><span class="tk"></span><span class="ln"></span><span class="tk"></span></div><div class="cap">Grátis para os primeiros</div></div>
+      <div class="metric"><div class="val exp">6<span class="u"> meses</span></div><div class="dim"><span class="tk"></span><span class="ln"></span><span class="tk"></span></div><div class="cap">Grátis para os primeiros</div></div>
     </div>
   </div>
 </section>
@@ -514,16 +539,75 @@
   </div>
 </section>
 
+<section id="evolucao">
+  <div class="wrap">
+    <div class="tab reveal"><div class="l"><span class="sheet-no exp">04</span><span class="ttl">Evolução</span></div><div class="r">Produto vivo</div></div>
+    <div class="sec-head reveal">
+      <h2>Não é uma promessa. Já está a funcionar — e cresce todas as semanas.</h2>
+      <p>O OREX está em uso real e ganha capacidades novas quase todos os dias. Os seis módulos lá em cima são só o cabeçalho: por baixo há muito mais, já instalado e a ser afinado com quem o usa.</p>
+    </div>
+
+    <div class="evo reveal">
+      <div>
+        <div class="now">
+          <div class="rel">Versão distribuída</div>
+          <div class="big">1.87<span class="u"> .0</span></div>
+          <div class="sub">a correr em obra, hoje</div>
+          <div class="split">
+            <div><div class="k">Arranque</div><div class="n">6 jun</div></div>
+            <div><div class="k">Semanas</div><div class="n">6</div></div>
+            <div><div class="k">Versões</div><div class="n">80+</div></div>
+            <div><div class="k">Plataformas</div><div class="n">3</div></div>
+          </div>
+        </div>
+
+        <div class="caps">
+          <div class="lbl">Já instalado, além dos 6 módulos</div>
+          <div class="chips">
+            <span class="chip">Consultas / RFQ</span><span class="chip">Cotações</span><span class="chip">Preços Padrão</span>
+            <span class="chip">Gestão Contratual</span><span class="chip">Análise de Riscos IA</span><span class="chip">Planeamento 4D</span>
+            <span class="chip">Curva-S</span><span class="chip">Estaleiro</span><span class="chip">KPIs & Carteira</span>
+            <span class="chip">QTO</span><span class="chip">COBie</span><span class="chip">IDS</span>
+            <span class="chip">Sustentabilidade</span><span class="chip">RTLS</span><span class="chip">Gestão documental</span>
+            <span class="chip">Multi-empresa</span><span class="chip">Agentes de IA</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="vlog">
+          <div class="row cur"><span class="v">1.87</span><span class="d">Documentos classificados e faturação de compras</span><span class="dt">jul · agora</span></div>
+          <div class="row"><span class="v">1.79</span><span class="d">Agente de IA que categoriza fornecedores</span><span class="dt">8 jul</span></div>
+          <div class="row"><span class="v">1.76</span><span class="d">Gestão Contratual + Análise Preventiva de Riscos (IA)</span><span class="dt">1 jul</span></div>
+          <div class="row"><span class="v">1.74</span><span class="d">Preços Padrão — biblioteca reutilizável entre obras</span><span class="dt">29 jun</span></div>
+          <div class="row"><span class="v">1.35</span><span class="d">Segurança — permit-to-work, painel e relatórios</span><span class="dt">23 jun</span></div>
+          <div class="row"><span class="v">1.28</span><span class="d">BIM — validação IDS (buildingSMART)</span><span class="dt">22 jun</span></div>
+          <div class="row"><span class="v">1.24</span><span class="d">BIM 4D no viewer, ligado ao planeamento</span><span class="dt">21 jun</span></div>
+          <div class="row"><span class="v">1.22</span><span class="d">BIM — sustentabilidade (carbono incorporado)</span><span class="dt">21 jun</span></div>
+          <div class="row"><span class="v">1.20</span><span class="d">BIM — quantidades (QTO) por artigo e material</span><span class="dt">21 jun</span></div>
+          <div class="row"><span class="v">1.14</span><span class="d">BIM — COBie + viewer IFC no browser</span><span class="dt">19 jun</span></div>
+          <div class="row"><span class="v">1.13</span><span class="d">RTLS — localização de pessoas e equipamentos</span><span class="dt">18 jun</span></div>
+          <div class="row"><span class="v">1.10</span><span class="d">Módulo de Obra (paridade com a orçamentação)</span><span class="dt">16 jun</span></div>
+          <div class="row"><span class="v">1.07</span><span class="d">Consultas (RFQ) e fornecedores multi-empresa</span><span class="dt">15 jun</span></div>
+          <div class="row"><span class="v">1.04</span><span class="d">Estaleiro, planeamento, KPIs, riscos e proposta</span><span class="dt">10 jun</span></div>
+          <div class="row"><span class="v">1.01</span><span class="d">Primeira versão em obra: presença, versões, sessões</span><span class="dt">7 jun</span></div>
+        </div>
+        <div class="vlog-note">Marcos principais. Entre eles, dezenas de correções e afinações a pedido de quem usa.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="beta">
   <div class="wrap">
-    <div class="tab reveal"><div class="l"><span class="sheet-no exp">04</span><span class="ttl">Programa-piloto</span></div><div class="r">Candidaturas abertas</div></div>
+    <div class="tab reveal"><div class="l"><span class="sheet-no exp">05</span><span class="ttl">Programa-piloto</span></div><div class="r">Candidaturas abertas</div></div>
     <div class="offer-card reveal">
       <div class="offer-left">
         <span class="eyebrow">Convite a empresas de construção</span>
-        <h2>Sê dos primeiros a usar o OREX. Um ano grátis.</h2>
+        <h2>Sê dos primeiros a usar o OREX. 6 meses grátis.</h2>
         <p>Procuramos empresas de 1 a 8 milhões para serem das primeiras a usar o OREX em obra e ajudar a afiná-lo.</p>
         <ul class="offer-perks">
-          <li><span class="chk"></span><span><strong>12 meses de utilização gratuita.</strong></span></li>
+          <li><span class="chk"></span><span><strong>6 meses de utilização gratuita.</strong></span></li>
           <li><span class="chk"></span><span>Apoio direto da equipa e <strong>linha aberta às vossas sugestões</strong>.</span></li>
           <li><span class="chk"></span><span>Decidem connosco o que entra primeiro.</span></li>
           <li><span class="chk"></span><span><strong>Países de expressão portuguesa:</strong> a testers credíveis, distribuímos versão na moeda local.</span></li>
@@ -551,9 +635,9 @@
   <div class="wrap">
     <div class="titleblock">
       <div class="cell brandcell"><img class="logo" src="data:image/png;base64,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" alt="OREX" /><div class="k">Next-Gen Construction</div><div class="v mono">Portugal · 2026</div></div>
-      <div class="cell"><div class="k">Estado</div><div class="v">Beta</div></div>
+      <div class="cell"><div class="k">Estado</div><div class="v">Beta · v1.87</div></div>
       <div class="cell"><div class="k">Escala</div><div class="v">1:1</div></div>
-      <div class="cell"><div class="k">Folha</div><div class="v">01 / 04</div></div>
+      <div class="cell"><div class="k">Folha</div><div class="v">01 / 05</div></div>
       <div class="cell"><div class="k">Contacto</div><div class="v mono">beta@orexerp.pt</div></div>
     </div>
   </div>
