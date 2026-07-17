@@ -554,7 +554,7 @@
       <div class="cell"><div class="k">Estado</div><div class="v">Beta</div></div>
       <div class="cell"><div class="k">Escala</div><div class="v">1:1</div></div>
       <div class="cell"><div class="k">Folha</div><div class="v">01 / 04</div></div>
-      <div class="cell"><div class="k">Contacto</div><div class="v mono">beta@orex.pt</div></div>
+      <div class="cell"><div class="k">Contacto</div><div class="v mono">beta@orexerp.pt</div></div>
     </div>
   </div>
 </footer>
@@ -569,7 +569,7 @@
     if(!nome||!empresa||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!perfil){msg.className='form-msg err';msg.textContent='Preenche o nome, a empresa, um email válido e a especialidade.';return;}
     const s=encodeURIComponent('Candidatura ao programa-piloto OREX');
     const b=encodeURIComponent('Nome: '+nome+'\nEmpresa: '+empresa+'\nEmail: '+email+'\nEspecialidade: '+perfil);
-    window.location.href='mailto:beta@orex.pt?subject='+s+'&body='+b;
+    window.location.href='mailto:beta@orexerp.pt?subject='+s+'&body='+b;
     msg.className='form-msg ok';msg.textContent='Obrigado, '+nome+'! Abrimos o teu email para confirmares o envio.';form.reset();
   });
 </script>
