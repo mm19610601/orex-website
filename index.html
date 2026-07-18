@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>OREX — As ferramentas das grandes, na tua equipa</title>
 <meta name="description" content="OREX junta orçamentação, BIM, fornecedores, obra, financeiro e fiscalização num só lugar, com IA — para uma equipa pequena produzir como as grandes. Programa-piloto: 6 meses grátis." />
-<!-- Formulario sem servidor (abre o email). Ligar form#betaForm a um servico para receber candidaturas. Figura = ilustracao SVG. -->
+<!-- Formulario liga ao FormSubmit.co (sem backend proprio): POST nativo p/ fallback sem JS + fetch no endpoint /ajax p/ mostrar o "Obrigado" inline. A 1a submissao exige clicar num email de ativacao enviado a beta@orexerp.pt. Figura = ilustracao SVG. -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -615,7 +615,12 @@
         </ul>
       </div>
       <div class="offer-right">
-        <form id="betaForm" novalidate>
+        <form id="betaForm" action="https://formsubmit.co/beta@orexerp.pt" method="POST" novalidate>
+          <input type="hidden" name="_subject" value="Candidatura ao programa-piloto OREX" />
+          <input type="hidden" name="_template" value="table" />
+          <input type="hidden" name="_captcha" value="false" />
+          <input type="hidden" name="_next" value="https://orexerp.pt" />
+          <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px" />
           <div class="field"><label for="nome">Nome</label><input type="text" id="nome" name="nome" placeholder="O teu nome" required /></div>
           <div class="field"><label for="empresa">Empresa</label><input type="text" id="empresa" name="empresa" placeholder="Nome da empresa" required /></div>
           <div class="field"><label for="email">Email</label><input type="email" id="email" name="email" placeholder="nome@empresa.pt" required /></div>
@@ -647,14 +652,22 @@
   const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:0.12});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   const form=document.getElementById('betaForm'), msg=document.getElementById('formMsg');
-  form.addEventListener('submit',(ev)=>{
+  form.addEventListener('submit',async(ev)=>{
     ev.preventDefault();
     const nome=form.nome.value.trim(),empresa=form.empresa.value.trim(),email=form.email.value.trim(),perfil=form.perfil.value;
     if(!nome||!empresa||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!perfil){msg.className='form-msg err';msg.textContent='Preenche o nome, a empresa, um email válido e a especialidade.';return;}
-    const s=encodeURIComponent('Candidatura ao programa-piloto OREX');
-    const b=encodeURIComponent('Nome: '+nome+'\nEmpresa: '+empresa+'\nEmail: '+email+'\nEspecialidade: '+perfil);
-    window.location.href='mailto:beta@orexerp.pt?subject='+s+'&body='+b;
-    msg.className='form-msg ok';msg.textContent='Obrigado, '+nome+'! Abrimos o teu email para confirmares o envio.';form.reset();
+    const btn=form.querySelector('button[type=submit]');btn.disabled=true;
+    msg.className='form-msg';msg.style.display='block';msg.textContent='A enviar…';
+    try{
+      const r=await fetch('https://formsubmit.co/ajax/beta@orexerp.pt',{
+        method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},
+        body:JSON.stringify({Nome:nome,Empresa:empresa,Email:email,Especialidade:perfil,_subject:'Candidatura ao programa-piloto OREX',_template:'table'})
+      });
+      const d=await r.json().catch(()=>({}));
+      if(r.ok&&String(d.success)==='true'){msg.className='form-msg ok';msg.style.display='';msg.textContent='Obrigado, '+nome+'! Recebemos a tua candidatura — entramos em contacto em breve.';form.reset();}
+      else{throw new Error(d.message||'erro');}
+    }catch(e){msg.className='form-msg err';msg.style.display='';msg.innerHTML='Não conseguimos enviar agora. Escreve-nos para <strong>beta@orexerp.pt</strong> e respondemos.';}
+    finally{btn.disabled=false;}
   });
 </script>
 </body>
