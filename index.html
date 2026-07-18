@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>OREX — As ferramentas das grandes, na tua equipa</title>
 <meta name="description" content="OREX junta orçamentação, BIM, fornecedores, obra, financeiro e fiscalização num só lugar, com IA — para uma equipa pequena produzir como as grandes. Programa-piloto: 6 meses grátis." />
-<!-- Formulario liga ao FormSubmit.co (sem backend proprio): POST nativo p/ fallback sem JS + fetch no endpoint /ajax p/ mostrar o "Obrigado" inline. A 1a submissao exige clicar num email de ativacao enviado a geral@orexerp.pt. Figura = ilustracao SVG. -->
+<!-- Formulario liga ao FormSubmit.co (sem backend proprio): POST nativo p/ fallback sem JS + fetch no endpoint /ajax p/ mostrar o "Obrigado" inline. A 1a submissao exige clicar num email de ativacao enviado a beta@orexerp.pt. Figura = ilustracao SVG. -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -616,7 +616,7 @@
         </ul>
       </div>
       <div class="offer-right">
-        <form id="betaForm" action="https://formsubmit.co/geral@orexerp.pt" method="POST" novalidate>
+        <form id="betaForm" action="https://formsubmit.co/beta@orexerp.pt" method="POST" novalidate>
           <input type="hidden" name="_subject" value="Candidatura ao programa-piloto OREX" />
           <input type="hidden" name="_template" value="table" />
           <input type="hidden" name="_captcha" value="false" />
@@ -644,7 +644,7 @@
       <div class="cell"><div class="k">Estado</div><div class="v">Beta · v1.87</div></div>
       <div class="cell"><div class="k">Escala</div><div class="v">1:1</div></div>
       <div class="cell"><div class="k">Folha</div><div class="v">01 / 05</div></div>
-      <div class="cell"><div class="k">Contacto</div><div class="v mono">geral@orexerp.pt</div></div>
+      <div class="cell"><div class="k">Contacto</div><div class="v mono">beta@orexerp.pt</div></div>
     </div>
   </div>
 </footer>
@@ -662,7 +662,7 @@
     const btn=form.querySelector('button[type=submit]');btn.disabled=true;
     msg.className='form-msg';msg.style.display='block';msg.textContent='A enviar…';
     try{
-      const r=await fetch('https://formsubmit.co/ajax/geral@orexerp.pt',{
+      const r=await fetch('https://formsubmit.co/ajax/beta@orexerp.pt',{
         method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},
         body:JSON.stringify({Nome:nome,Empresa:empresa,Email:email,Especialidade:perfil,_subject:'Candidatura ao programa-piloto OREX',_template:'table'})
       });
@@ -675,7 +675,7 @@
         form.reset();descarregar();
       }
       else{throw new Error(d.message||'erro');}
-    }catch(e){msg.className='form-msg err';msg.style.display='';msg.innerHTML='Não conseguimos enviar agora. Escreve-nos para <strong>geral@orexerp.pt</strong> e respondemos.';}
+    }catch(e){msg.className='form-msg err';msg.style.display='';msg.innerHTML='Não conseguimos enviar agora. Escreve-nos para <strong>beta@orexerp.pt</strong> e respondemos.';}
     finally{btn.disabled=false;}
   });
 </script>
