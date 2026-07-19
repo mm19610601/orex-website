@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>OREX — As ferramentas das grandes, na tua equipa</title>
 <meta name="description" content="OREX junta orçamentação, BIM, fornecedores, obra, financeiro e fiscalização num só lugar, com IA — para uma equipa pequena produzir como as grandes. Programa-piloto: 6 meses grátis." />
-<!-- Formulario liga ao FormSubmit.co (sem backend proprio): POST nativo p/ fallback sem JS + fetch no endpoint /ajax p/ mostrar o "Obrigado" inline. A 1a submissao exige clicar num email de ativacao enviado a beta@orexerp.pt. Figura = ilustracao SVG. -->
+<!-- Download direto da ultima versao (bucket publico Supabase, chave fixa OREX-ERP-Setup-latest.exe). Sem formulario: captura de leads fica para 2a fase. Contacto do piloto = beta@orexerp.pt. Figura = ilustracao SVG. -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -190,6 +190,11 @@
   .form-msg.err{display:block;background:#fff;border:1px solid var(--steel);color:var(--ink-2);}
   .offer-right .btn-primary{width:100%;justify-content:center;margin-top:6px;}
   .fineprint{font-size:0.77rem;color:var(--steel);margin-top:14px;line-height:1.5;}
+  .dl-panel{display:flex;flex-direction:column;justify-content:center;height:100%;}
+  .dl-badge{font-family:"JetBrains Mono",monospace;font-size:0.66rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--steel);}
+  .dl-ver{font-family:"Archivo Expanded","Archivo",sans-serif;font-weight:900;font-size:2.6rem;line-height:1;margin:8px 0 22px;letter-spacing:-0.02em;}
+  .dl-ver strong{color:var(--ink);}
+  .offer-right .dl-btn{width:100%;justify-content:center;font-size:1rem;padding:16px 22px;}
 
   footer{border-top:1px solid var(--ink);background:var(--paper-2);}
   .titleblock{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr 1fr;}
@@ -600,14 +605,14 @@
 
 <section id="beta">
   <div class="wrap">
-    <div class="tab reveal"><div class="l"><span class="sheet-no exp">05</span><span class="ttl">Programa-piloto</span></div><div class="r">Candidaturas abertas</div></div>
+    <div class="tab reveal"><div class="l"><span class="sheet-no exp">05</span><span class="ttl">Programa-piloto</span></div><div class="r">Descarrega e experimenta</div></div>
     <div class="offer-card reveal">
       <div class="offer-left">
         <span class="eyebrow">Convite a empresas de construção</span>
-        <h2>Candidata-te e descarrega o OREX. 6 meses grátis.</h2>
-        <p>Procuramos empresas de 1 a 8 milhões para serem das primeiras a usar o OREX em obra e ajudar a afiná-lo. Preenche o formulário e a <strong>última versão começa a descarregar</strong>.</p>
+        <h2>Descarrega o OREX e experimenta. 6 meses grátis.</h2>
+        <p>Procuramos empresas de 1 a 8 milhões para serem das primeiras a usar o OREX em obra e ajudar a afiná-lo. Descarrega a <strong>última versão</strong> aqui ao lado e experimenta.</p>
         <ul class="offer-perks">
-          <li><span class="chk"></span><span><strong>Descarrega já a última versão</strong> (Windows) ao candidatares-te.</span></li>
+          <li><span class="chk"></span><span><strong>A última versão, já</strong> (Windows) — sem registo.</span></li>
           <li><span class="chk"></span><span><strong>6 meses de utilização gratuita.</strong></span></li>
           <li><span class="chk"></span><span>Apoio direto da equipa e <strong>linha aberta às vossas sugestões</strong>.</span></li>
           <li><span class="chk"></span><span>Decidem connosco o que entra primeiro.</span></li>
@@ -615,23 +620,11 @@
           <li><span class="chk"></span><span>Sem compromisso de continuidade no fim do período.</span></li>
         </ul>
       </div>
-      <div class="offer-right">
-        <form id="betaForm" action="https://formsubmit.co/beta@orexerp.pt" method="POST" novalidate>
-          <input type="hidden" name="_subject" value="Candidatura ao programa-piloto OREX" />
-          <input type="hidden" name="_template" value="table" />
-          <input type="hidden" name="_captcha" value="false" />
-          <input type="hidden" name="_next" value="https://orexerp.pt" />
-          <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px" />
-          <div class="field"><label for="nome">Nome</label><input type="text" id="nome" name="nome" placeholder="O teu nome" required /></div>
-          <div class="field"><label for="empresa">Empresa</label><input type="text" id="empresa" name="empresa" placeholder="Nome da empresa" required /></div>
-          <div class="field"><label for="email">Email</label><input type="email" id="email" name="email" placeholder="nome@empresa.pt" required /></div>
-          <div class="field"><label for="perfil">Especialidade</label>
-            <select id="perfil" name="perfil" required><option value="" disabled selected>Seleciona uma opção</option><option>Empreiteiro geral</option><option>Estruturas</option><option>Instalações hidráulicas</option><option>Instalações elétricas</option><option>Outra</option></select>
-          </div>
-          <button type="submit" class="btn btn-primary">Candidatar e descarregar <span class="arrow">&darr;</span></button>
-          <div class="form-msg" id="formMsg" role="status" aria-live="polite"></div>
-          <p class="fineprint">OREX v1.87 · Windows 64-bit · ~87 MB · Linux e macOS a caminho.<br />Ao enviar, autorizas o contacto da equipa OREX sobre o programa-piloto. Não partilhamos os teus dados.</p>
-        </form>
+      <div class="offer-right dl-panel">
+        <span class="dl-badge">Descarregar · Windows 64-bit</span>
+        <div class="dl-ver">OREX <strong>v1.87</strong></div>
+        <a href="https://kmcuqxklcolddfakgzwa.supabase.co/storage/v1/object/public/downloads/OREX-ERP-Setup-latest.exe" class="btn btn-primary dl-btn" download>Descarregar agora <span class="arrow">&darr;</span></a>
+        <p class="fineprint">~87 MB · instalador .exe · Linux e macOS a caminho.<br />Queres entrar no programa-piloto? Fala connosco: <a href="mailto:beta@orexerp.pt" style="color:inherit;text-decoration:underline">beta@orexerp.pt</a>.</p>
       </div>
     </div>
   </div>
@@ -652,32 +645,6 @@
 <script>
   const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:0.12});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-  const DL='https://kmcuqxklcolddfakgzwa.supabase.co/storage/v1/object/public/downloads/OREX-ERP-Setup-latest.exe';
-  const form=document.getElementById('betaForm'), msg=document.getElementById('formMsg');
-  function descarregar(){const a=document.createElement('a');a.href=DL;a.rel='noopener';document.body.appendChild(a);a.click();a.remove();}
-  form.addEventListener('submit',async(ev)=>{
-    ev.preventDefault();
-    const nome=form.nome.value.trim(),empresa=form.empresa.value.trim(),email=form.email.value.trim(),perfil=form.perfil.value;
-    if(!nome||!empresa||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!perfil){msg.className='form-msg err';msg.textContent='Preenche o nome, a empresa, um email válido e a especialidade.';return;}
-    const btn=form.querySelector('button[type=submit]');btn.disabled=true;
-    msg.className='form-msg';msg.style.display='block';msg.textContent='A enviar…';
-    try{
-      const r=await fetch('https://formsubmit.co/ajax/beta@orexerp.pt',{
-        method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},
-        body:JSON.stringify({Nome:nome,Empresa:empresa,Email:email,Especialidade:perfil,_subject:'Candidatura ao programa-piloto OREX',_template:'table'})
-      });
-      const d=await r.json().catch(()=>({}));
-      if(r.ok&&String(d.success)==='true'){
-        msg.className='form-msg ok';msg.style.display='';
-        msg.textContent='Obrigado, '+nome+'! A descarga vai começar. Se não começar, ';
-        const lk=document.createElement('a');lk.href=DL;lk.textContent='clica aqui';lk.style.color='inherit';lk.style.textDecoration='underline';
-        msg.appendChild(lk);msg.appendChild(document.createTextNode('.'));
-        form.reset();descarregar();
-      }
-      else{throw new Error(d.message||'erro');}
-    }catch(e){msg.className='form-msg err';msg.style.display='';msg.innerHTML='Não conseguimos enviar agora. Escreve-nos para <strong>beta@orexerp.pt</strong> e respondemos.';}
-    finally{btn.disabled=false;}
-  });
 </script>
 </body>
 </html>
