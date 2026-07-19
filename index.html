@@ -610,9 +610,9 @@
       <div class="offer-left">
         <span class="eyebrow">Convite a empresas de construção</span>
         <h2>Pede o OREX e experimenta. 6 meses grátis.</h2>
-        <p>Procuramos empresas de 1 a 8 milhões para serem das primeiras a usar o OREX em obra e ajudar a afiná-lo. Preenche aqui ao lado e <strong>enviamos-te o link de descarga por email</strong>.</p>
+        <p>Procuramos empresas de 1 a 8 milhões para serem das primeiras a usar o OREX em obra e ajudar a afiná-lo. Preenche aqui ao lado e <strong>enviamos-te o link de descarga por email</strong>, após uma validação rápida.</p>
         <ul class="offer-perks">
-          <li><span class="chk"></span><span><strong>Recebes o link da última versão</strong> (Windows) no teu email.</span></li>
+          <li><span class="chk"></span><span><strong>Recebes o link da última versão</strong> (Windows) por email, após validação.</span></li>
           <li><span class="chk"></span><span><strong>6 meses de utilização gratuita.</strong></span></li>
           <li><span class="chk"></span><span>Apoio direto da equipa e <strong>linha aberta às vossas sugestões</strong>.</span></li>
           <li><span class="chk"></span><span>Decidem connosco o que entra primeiro.</span></li>
@@ -629,9 +629,9 @@
           <div class="field"><label for="perfil">Especialidade</label>
             <select id="perfil" name="Especialidade" required><option value="" disabled selected>Seleciona uma opção</option><option>Empreiteiro geral</option><option>Estruturas</option><option>Instalações hidráulicas</option><option>Instalações elétricas</option><option>Outra</option></select>
           </div>
-          <button type="submit" class="btn btn-primary">Enviar-me o link de descarga <span class="arrow">&rarr;</span></button>
+          <button type="submit" class="btn btn-primary">Pedir acesso ao OREX <span class="arrow">&rarr;</span></button>
           <div class="form-msg" id="formMsg" role="status" aria-live="polite"></div>
-          <p class="fineprint">OREX v1.87 · Windows 64-bit · ~87 MB · Linux e macOS a caminho.<br /><strong>Enviamos o link de descarga para o teu email</strong> — assim acompanhamos quem está a testar o OREX.</p>
+          <p class="fineprint">OREX v1.87 · Windows 64-bit · ~87 MB · Linux e macOS a caminho.<br /><strong>Validamos cada pedido</strong> e enviamos o link de descarga por email — assim controlamos quem testa o OREX.</p>
         </form>
       </div>
     </div>
@@ -665,7 +665,7 @@
       await fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:new URLSearchParams({Nome:nome,Empresa:empresa,Email:email,Especialidade:perfil,_honey:honey}).toString()});
     }catch(e){}
     msg.className='form-msg ok';msg.style.display='';
-    msg.textContent='Obrigado, '+nome+'! Enviámos o link de descarga para '+email+'. Vê a tua caixa de entrada (e o spam).';
+    msg.textContent='Obrigado, '+nome+'! Recebemos o teu pedido — enviamos-te o link de descarga por email, após uma validação rápida.';
     form.reset();btn.disabled=false;
   });
 </script>
