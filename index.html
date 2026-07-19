@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>OREX — As ferramentas das grandes, na tua equipa</title>
 <meta name="description" content="OREX junta orçamentação, BIM, fornecedores, obra, financeiro e fiscalização num só lugar, com IA — para uma equipa pequena produzir como as grandes. Programa-piloto: 6 meses grátis." />
-<!-- Download direto da ultima versao (bucket publico Supabase, chave fixa OREX-ERP-Setup-latest.exe). Sem formulario: captura de leads fica para 2a fase. Contacto do piloto = beta@orexerp.pt. Figura = ilustracao SVG. -->
+<!-- Formulario (Nome/Empresa/Email/Especialidade) faz POST no-cors para um Apps Script (/exec) que envia email a beta@orexerp.pt; a seguir arranca a descarga do bucket publico Supabase (chave fixa OREX-ERP-Setup-latest.exe). Figura = ilustracao SVG. -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -610,9 +610,9 @@
       <div class="offer-left">
         <span class="eyebrow">Convite a empresas de construção</span>
         <h2>Descarrega o OREX e experimenta. 6 meses grátis.</h2>
-        <p>Procuramos empresas de 1 a 8 milhões para serem das primeiras a usar o OREX em obra e ajudar a afiná-lo. Descarrega a <strong>última versão</strong> aqui ao lado e experimenta.</p>
+        <p>Procuramos empresas de 1 a 8 milhões para serem das primeiras a usar o OREX em obra e ajudar a afiná-lo. Preenche aqui ao lado e a <strong>última versão começa a descarregar</strong>.</p>
         <ul class="offer-perks">
-          <li><span class="chk"></span><span><strong>A última versão, já</strong> (Windows) — sem registo.</span></li>
+          <li><span class="chk"></span><span><strong>Descarrega a última versão</strong> (Windows) ao preencher.</span></li>
           <li><span class="chk"></span><span><strong>6 meses de utilização gratuita.</strong></span></li>
           <li><span class="chk"></span><span>Apoio direto da equipa e <strong>linha aberta às vossas sugestões</strong>.</span></li>
           <li><span class="chk"></span><span>Decidem connosco o que entra primeiro.</span></li>
@@ -620,11 +620,19 @@
           <li><span class="chk"></span><span>Sem compromisso de continuidade no fim do período.</span></li>
         </ul>
       </div>
-      <div class="offer-right dl-panel">
-        <span class="dl-badge">Descarregar · Windows 64-bit</span>
-        <div class="dl-ver">OREX <strong>v1.87</strong></div>
-        <a href="https://kmcuqxklcolddfakgzwa.supabase.co/storage/v1/object/public/downloads/OREX-ERP-Setup-latest.exe" class="btn btn-primary dl-btn" download>Descarregar agora <span class="arrow">&darr;</span></a>
-        <p class="fineprint">~87 MB · instalador .exe · Linux e macOS a caminho.<br />Queres entrar no programa-piloto? Fala connosco: <a href="mailto:beta@orexerp.pt" style="color:inherit;text-decoration:underline">beta@orexerp.pt</a>.</p>
+      <div class="offer-right">
+        <form id="betaForm" novalidate>
+          <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px" />
+          <div class="field"><label for="nome">Nome</label><input type="text" id="nome" name="Nome" placeholder="O teu nome" required /></div>
+          <div class="field"><label for="empresa">Empresa</label><input type="text" id="empresa" name="Empresa" placeholder="Nome da empresa" required /></div>
+          <div class="field"><label for="email">Email</label><input type="email" id="email" name="Email" placeholder="nome@empresa.pt" required /></div>
+          <div class="field"><label for="perfil">Especialidade</label>
+            <select id="perfil" name="Especialidade" required><option value="" disabled selected>Seleciona uma opção</option><option>Empreiteiro geral</option><option>Estruturas</option><option>Instalações hidráulicas</option><option>Instalações elétricas</option><option>Outra</option></select>
+          </div>
+          <button type="submit" class="btn btn-primary">Descarregar <span class="arrow">&darr;</span></button>
+          <div class="form-msg" id="formMsg" role="status" aria-live="polite"></div>
+          <p class="fineprint">OREX v1.87 · Windows 64-bit · ~87 MB · Linux e macOS a caminho.<br />Ao descarregar, autorizas o contacto da equipa OREX sobre o programa-piloto.</p>
+        </form>
       </div>
     </div>
   </div>
@@ -645,6 +653,25 @@
 <script>
   const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:0.12});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  const DL='https://kmcuqxklcolddfakgzwa.supabase.co/storage/v1/object/public/downloads/OREX-ERP-Setup-latest.exe';
+  const ENDPOINT='https://script.google.com/macros/s/AKfycbyO6UcUYRvLvgXl-ef-4rIedorjzi6ppPme_XlQdPhJZtWvTHry-T-_nN70cbXjkDeV/exec';
+  const form=document.getElementById('betaForm'), msg=document.getElementById('formMsg');
+  function descarregar(){const a=document.createElement('a');a.href=DL;a.rel='noopener';document.body.appendChild(a);a.click();a.remove();}
+  form.addEventListener('submit',async(ev)=>{
+    ev.preventDefault();
+    const nome=form.Nome.value.trim(),empresa=form.Empresa.value.trim(),email=form.Email.value.trim(),perfil=form.Especialidade.value,honey=form._honey.value;
+    if(!nome||!empresa||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!perfil){msg.className='form-msg err';msg.style.display='';msg.textContent='Preenche o nome, a empresa, um email válido e a especialidade.';return;}
+    const btn=form.querySelector('button[type=submit]');btn.disabled=true;
+    msg.className='form-msg';msg.style.display='block';msg.textContent='A preparar a descarga…';
+    try{
+      await fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:new URLSearchParams({Nome:nome,Empresa:empresa,Email:email,Especialidade:perfil,_honey:honey}).toString()});
+    }catch(e){}
+    msg.className='form-msg ok';msg.style.display='';
+    msg.textContent='Obrigado, '+nome+'! A descarga vai começar. Se não começar, ';
+    const lk=document.createElement('a');lk.href=DL;lk.textContent='clica aqui';lk.style.color='inherit';lk.style.textDecoration='underline';
+    msg.appendChild(lk);msg.appendChild(document.createTextNode('.'));
+    form.reset();descarregar();btn.disabled=false;
+  });
 </script>
 </body>
 </html>
