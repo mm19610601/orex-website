@@ -2,13 +2,14 @@
 //
 //   A obra é o pior sítio para se depender da internet: cave, estrutura de
 //   betão, o telefone com uma barra. A app tem de abrir na mesma. Por isso o
-//   seu próprio código vive em cache e serve-se de lá primeiro.
+//   seu próprio código vive em cache — mas serve-se dela como REDE DE
+//   SEGURANÇA, não como primeira escolha: ver em baixo porquê.
 //
 //   O que NÃO passa por aqui: o Supabase. Chamadas à rede de dados nunca se
 //   guardam em cache — uma resposta velha seria pior do que não haver resposta.
 //   Falhando, quem trata é a fila da app, não este ficheiro.
 
-const VERSAO = "orex-app-v3";   // subir a cada alteração da app, senão os telefones ficam com a velha
+const VERSAO = "orex-app-v4";   // subir a cada alteração da app, senão os telefones ficam com a velha
 const ESSENCIAL = [
   "./",
   "./index.html",
@@ -35,8 +36,27 @@ self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET" || url.origin !== self.location.origin) return;
   if (!url.pathname.startsWith("/app/")) return;
 
-  // Cache primeiro: abrir depressa importa mais do que ter a última versão do
-  // ícone. Actualiza-se em segundo plano, e da próxima vez já está fresco.
+  // A app em si vai à rede primeiro. Cache primeiro parece mais rápido, mas
+  // fazia com que uma alteração só aparecesse na SEGUNDA vez que se abria — e
+  // ninguém liga uma coisa dessas ao service worker: fica a pensar que o botão
+  // novo não existe. São 35 kB; o segundo que se perde vale a confusão que
+  // poupa. Sem rede, serve-se o que está guardado, que é o que interessa.
+  const eApp = url.pathname.endsWith("/app/") || url.pathname.endsWith("index.html")
+            || url.pathname.endsWith("sw.js") || url.pathname.endsWith("manifest.json");
+
+  if (eApp) {
+    e.respondWith(
+      fetch(e.request)
+        .then((r) => {
+          if (r && r.ok) caches.open(VERSAO).then((c) => c.put(e.request, r.clone()));
+          return r;
+        })
+        .catch(() => caches.match(e.request).then(a => a || caches.match("./index.html")))
+    );
+    return;
+  }
+
+  // Os ícones não mudam: cache primeiro, e actualiza-se em segundo plano.
   e.respondWith(
     caches.match(e.request).then((achou) => {
       const rede = fetch(e.request)
@@ -44,7 +64,7 @@ self.addEventListener("fetch", (e) => {
           if (r && r.ok) caches.open(VERSAO).then((c) => c.put(e.request, r.clone()));
           return r;
         })
-        .catch(() => achou || caches.match("./index.html"));
+        .catch(() => achou);
       return achou || rede;
     })
   );

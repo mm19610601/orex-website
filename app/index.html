@@ -115,12 +115,12 @@
   .estado.envio{background:rgba(15,15,13,0.08);color:var(--ink-2);}
   .estado.falhou{background:rgba(163,44,37,0.12);color:var(--erro);}
 
-  /* Ditar — o polegar sujo de obra escreve mal num teclado de vidro. */
-  .ditado{position:relative;}
-  .ditado textarea{padding-right:54px;}
+  /* Ditar — o polegar sujo de obra escreve mal num teclado de vidro. Botão
+     inteiro e com nome: um ícone dentro da caixa passa despercebido, e o que
+     passa despercebido é como se não existisse. */
   .microfone{
-    position:absolute;right:7px;bottom:7px;width:40px;height:40px;padding:0;font-size:19px;
-    background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:20px;
+    margin-top:8px;padding:11px;font-size:15px;
+    background:var(--paper-2);color:var(--ink);border:1px solid var(--line);
   }
   .microfone.a-ouvir{background:var(--erro);color:#fff;border-color:var(--erro);animation:pulsa 1.1s ease-in-out infinite;}
   @keyframes pulsa{0%,100%{box-shadow:0 0 0 0 rgba(163,44,37,0.55);}50%{box-shadow:0 0 0 9px rgba(163,44,37,0);}}
@@ -392,13 +392,49 @@ function encolher(ficheiro, lado = 1600, q = 0.82) {
 
 // Onde foi tirada. Best-effort: sem sinal de GPS a fotografia vai na mesma —
 // perder a fotografia por causa da localização seria trocar o essencial pelo
-// acessório.
+// acessório. Por isso aqui é depressa, e a pontaria fica para quem a pede.
 function ondeEstou(ms = 8000) {
   return new Promise(ok => {
     if (!navigator.geolocation) return ok({});
     navigator.geolocation.getCurrentPosition(
       p => ok({ lat: p.coords.latitude, lng: p.coords.longitude, precisao: p.coords.accuracy }),
-      () => ok({}), { enableHighAccuracy: true, timeout: ms, maximumAge: 30000 });
+      () => ok({}), { enableHighAccuracy: true, timeout: ms, maximumAge: 10000 });
+  });
+}
+
+// Afinar a posição.
+//
+//   Uma leitura só é quase sempre má: o telefone responde à primeira com o que
+//   tem à mão — a antena de rede, o wi-fi do vizinho — e isso dá 20 a 40 m. O
+//   GPS ainda está a apanhar satélites nesse momento.
+//
+//   Fica-se a ouvir. De segundo a segundo chegam leituras cada vez melhores e
+//   guarda-se a melhor; pára-se quando chega ao alvo, ou ao fim do tempo. Vinte
+//   segundos parado ao ar livre costumam levar de ±30 m a ±5 m.
+//
+//   `maximumAge: 0` é essencial: sem isso o telefone devolve alegremente uma
+//   leitura velha em cache — a mesma que se está a tentar melhorar.
+function afinarPosicao({ alvoM = 8, segundos = 20, aoVivo } = {}) {
+  return new Promise(ok => {
+    if (!navigator.geolocation) return ok({});
+    let melhor = null, vigia = null, relogio = null, acabou = false;
+    const acabar = () => {
+      if (acabou) return; acabou = true;
+      if (vigia != null) navigator.geolocation.clearWatch(vigia);
+      clearTimeout(relogio);
+      ok(melhor || {});
+    };
+    vigia = navigator.geolocation.watchPosition(
+      p => {
+        const c = { lat: p.coords.latitude, lng: p.coords.longitude, precisao: p.coords.accuracy };
+        if (!melhor || c.precisao < melhor.precisao) melhor = c;
+        if (aoVivo) aoVivo(melhor);
+        if (melhor.precisao <= alvoM) acabar();
+      },
+      () => { /* uma leitura falhada não estraga as outras */ },
+      { enableHighAccuracy: true, maximumAge: 0, timeout: segundos * 1000 }
+    );
+    relogio = setTimeout(acabar, segundos * 1000);
   });
 }
 
@@ -593,11 +629,9 @@ function pintarCamara() {
       </div>
       <div class="campo" style="margin-bottom:0;">
         <label for="nota">Nota <span style="font-weight:400;color:var(--steel);">(opcional)</span></label>
-        <div class="ditado">
-          <textarea id="nota" placeholder="O que se está a ver"></textarea>
-          <button type="button" id="btDitar" class="microfone" title="Ditar">🎤</button>
-        </div>
-        <p id="dicaDitado" style="font-size:11.5px;color:var(--steel);margin:5px 0 0;"></p>
+        <textarea id="nota" placeholder="ex.: betonagem do P1"></textarea>
+        <button type="button" id="btDitar" class="microfone">🎤 Ditar a nota</button>
+        <p id="dicaDitado" style="font-size:11.5px;color:var(--steel);margin:6px 0 0;"></p>
       </div>
     </div>
     <p style="font-size:12px;color:var(--steel);text-align:center;">
@@ -607,8 +641,7 @@ function pintarCamara() {
   $("#barra").hidden = false;
   $("#barra").innerHTML =
     `<button class="disparo" id="btFoto" ${obras.length ? "" : "disabled"}>📷 Fotografar</button>
-     <button class="secundario" id="btPos" style="flex:0 0 auto;padding:16px 18px;"
-             ${obras.length ? "" : "disabled"} title="Marcar onde estou">📍</button>`;
+     <button class="secundario" id="btPos" ${obras.length ? "" : "disabled"}>📍 Marcar posição</button>`;
   $("#btFoto").onclick = () => $("#ficheiro").click();
   $("#btPos").onclick = marcarPosicao;
 
@@ -656,7 +689,7 @@ function ligarDitado() {
     const jaLa = campo.value.trim();
     let firme = "";
 
-    r.onstart = () => { bt.classList.add("a-ouvir"); bt.textContent = "⏹"; dica.textContent = "A ouvir… toca para parar."; };
+    r.onstart = () => { bt.classList.add("a-ouvir"); bt.textContent = "⏹ Parar de ouvir"; dica.textContent = "A ouvir… toca para parar."; };
     r.onresult = (ev) => {
       let porFirmar = "";
       for (let i = ev.resultIndex; i < ev.results.length; i++) {
@@ -672,7 +705,7 @@ function ligarDitado() {
         : ev.error === "no-speech" ? "Não ouvi nada." : "O ditado falhou. Podes escrever à mão.";
     };
     r.onend = () => {
-      _ouvinte = null; bt.classList.remove("a-ouvir"); bt.textContent = "🎤";
+      _ouvinte = null; bt.classList.remove("a-ouvir"); bt.textContent = "🎤 Ditar a nota";
       if (!dica.textContent.includes("autoriza") && !dica.textContent.includes("falhou")) dica.textContent = "";
       campo.value = campo.value.trim();
     };
@@ -721,21 +754,37 @@ $("#ficheiro").onchange = async (ev) => {
    Aqui exige-se pontaria: uma posição com 60 m de erro não diz nada a quem
    quer saber em que piso se está. Abaixo de 30 m aceita-se, acima pergunta-se.
    ────────────────────────────────────────────────────────────────────────── */
-const PRECISAO_BOA = 30;   // metros
+const PRECISAO_ALVO = 8;    // metros — pára de afinar quando chega aqui
+const PRECISAO_MA   = 25;   // metros — acima disto pergunta antes de aceitar
+let _aAfinar = false;
 
 async function marcarPosicao() {
+  if (_aAfinar) return;
   const emp = empresasObras().find(e => e.ownerId === +(($("#emp") || {}).value || (ler(G.ultimo) || {}).ownerId))
             || empresasObras()[0];
   const obra = emp?.obras.find(o => o.id === +($("#obra") || {}).value);
   if (!emp || !obra) return aviso("Escolhe primeiro a obra.", "erro");
 
-  aviso("A apurar a posição…", "nota");
-  const onde = await ondeEstou(15000);
+  // Vinte segundos parece muito até se ver o número a descer. Mostrar a
+  // precisão a melhorar em directo é o que faz a espera valer a pena — e
+  // ensina, sem explicar nada, que ao ar livre e parado se consegue melhor.
+  _aAfinar = true;
+  const bt = $("#btPos"); if (bt) { bt.disabled = true; bt.textContent = "⏳ A afinar…"; }
+  aviso("A afinar a posição… aponta o telefone ao céu e não te mexas.", "nota");
+  const onde = await afinarPosicao({
+    alvoM: PRECISAO_ALVO, segundos: 20,
+    aoVivo: (m) => aviso(`A afinar… ±${Math.round(m.precisao)} m` +
+      (m.precisao <= PRECISAO_ALVO ? " — chega." : " (continua a melhorar)"), "nota"),
+  });
+  _aAfinar = false;
+  if (bt) { bt.disabled = false; bt.textContent = "📍 Marcar posição"; }
+
   if (onde.lat == null) return aviso("Não consegui obter a posição. Autoriza a localização e tenta ao ar livre.", "erro");
 
-  if (onde.precisao > PRECISAO_BOA &&
-      !confirm(`A posição só tem ${Math.round(onde.precisao)} m de precisão — dentro de um edifício é normal.\n\n`
-             + "Marcar assim mesmo?")) return aviso(null, "nota");
+  if (onde.precisao > PRECISAO_MA &&
+      !confirm(`O melhor que consegui foram ${Math.round(onde.precisao)} m de precisão.\n\n`
+             + "Dentro de um edifício é normal — ao ar livre costuma chegar a menos de 10 m.\n\n"
+             + "Marcar assim mesmo?")) return aviso("Posição não marcada.", "nota");
 
   const nota = ($("#nota") || {}).value || "";
   await filaGrav({
