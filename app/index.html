@@ -275,6 +275,22 @@ async function trocarPassword() {
 /* ══════════════════════════════════════════════════════════════════════════
    Destinos — para onde este telefone pode mandar
    ────────────────────────────────────────────────────────────────────────── */
+// Quando o aparelho é revogado no OREX, a app tem de dar por isso.
+//
+// Antes não dava: ficava com a credencial guardada, as fotografias e as
+// posições falhavam uma a uma na fila, e o ecrã de emparelhamento nunca
+// voltava. Quem revogou o telemóvel via-o continuar como se nada fosse.
+//
+// A fila NÃO se apaga. O que lá está foi tirado por alguém e pode ser enviado
+// assim que o aparelho voltar a ser emparelhado.
+function desligarPorRevogacao(porque) {
+  localStorage.removeItem(G.cred);
+  localStorage.removeItem(G.sessao);
+  localStorage.removeItem(G.destinos);
+  vista = "camara"; pintar();
+  aviso(porque + " Lê um QR novo para voltar a ligar. O que está na fila fica à espera.", "erro");
+}
+
 async function buscarDestinos() {
   const c = cred(), tok = await autenticar();
   const r = await fetch(`${c.url}/rest/v1/rpc/mov_destinos`, {
@@ -283,8 +299,13 @@ async function buscarDestinos() {
     body: "{}",
   });
   if (!r.ok) throw new Error(`O servidor recusou a lista de obras (${r.status}).`);
+  // A chamada correu bem e não veio nada: não é falta de rede, é o servidor a
+  // dizer que este aparelho já não existe para ele. Sinal definitivo.
   const d = await r.json();
-  if (!d || !d.empresas) throw new Error("Este aparelho já não está activo.");
+  if (!d || !d.empresas) {
+    desligarPorRevogacao("Este telemóvel foi desligado do OREX.");
+    throw new Error("Aparelho revogado.");
+  }
   grav(G.destinos, { ...d, em: Date.now() });
   return d;
 }
@@ -361,6 +382,14 @@ async function escoarFila(porOrdem) {
         it.tentativas = (it.tentativas || 0) + 1;
         it.proxima = Date.now() + Math.min(10 * 60000, 15000 * 2 ** Math.min(it.tentativas, 5));
         await filaGrav(it);
+        // "Sem autorização" pode ser um sinal de que o aparelho foi revogado
+        // enquanto a app estava aberta. Vale a pena confirmar uma vez: se foi,
+        // buscarDestinos desliga e volta ao emparelhamento, em vez de a fila
+        // ficar a bater na parede de dez em dez minutos.
+        if (/autoriza/i.test(e.message)) {
+          try { await buscarDestinos(); } catch { /* já tratou */ }
+          if (!cred()) break;
+        }
       }
       filaCache = await filaPor(); pintar();
     }
