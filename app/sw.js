@@ -8,7 +8,7 @@
 //   guardam em cache — uma resposta velha seria pior do que não haver resposta.
 //   Falhando, quem trata é a fila da app, não este ficheiro.
 
-const VERSAO = "orex-app-v2";   // subir a cada alteração da app, senão os telefones ficam com a velha
+const VERSAO = "orex-app-v3";   // subir a cada alteração da app, senão os telefones ficam com a velha
 const ESSENCIAL = [
   "./",
   "./index.html",

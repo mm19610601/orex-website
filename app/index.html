@@ -307,16 +307,20 @@ async function detalheErro(r, oQue) {
 async function enviarUm(it) {
   const c = cred();
   let tok = await autenticar();
-  const caminho = `${c.aparelhoId}/${it.tiradaEm.slice(0, 7)}/${it.idLocal}.jpg`;
+  // Uma posição é só a linha — não há imagem para subir.
+  const posicao = it.tipo === "posicao";
+  const caminho = posicao ? null : `${c.aparelhoId}/${it.tiradaEm.slice(0, 7)}/${it.idLocal}.jpg`;
 
-  const por = async (t) => fetch(`${c.url}/storage/v1/object/orex-movel/${caminho}`, {
-    method: "POST",
-    headers: { apikey: c.chave, Authorization: `Bearer ${t}`, "Content-Type": "image/jpeg", "x-upsert": "true" },
-    body: it.foto,
-  });
-  let r1 = await por(tok);
-  if (r1.status === 401) { localStorage.removeItem(G.sessao); tok = await autenticar(); r1 = await por(tok); }
-  if (!r1.ok) throw new Error(await detalheErro(r1, "a fotografia"));
+  if (!posicao) {
+    const por = async (t) => fetch(`${c.url}/storage/v1/object/orex-movel/${caminho}`, {
+      method: "POST",
+      headers: { apikey: c.chave, Authorization: `Bearer ${t}`, "Content-Type": "image/jpeg", "x-upsert": "true" },
+      body: it.foto,
+    });
+    let r1 = await por(tok);
+    if (r1.status === 401) { localStorage.removeItem(G.sessao); tok = await autenticar(); r1 = await por(tok); }
+    if (!r1.ok) throw new Error(await detalheErro(r1, "a fotografia"));
+  }
 
   const r2 = await fetch(`${c.url}/rest/v1/Mov_Captura`, {
     method: "POST",
@@ -324,7 +328,7 @@ async function enviarUm(it) {
                Prefer: "return=minimal" },
     body: JSON.stringify({
       IdLocal: it.idLocal, AparelhoID: c.aparelhoId, OwnerID: it.ownerId,
-      Destino: "obra", RefID: it.obraId, TiradaEm: it.tiradaEm,
+      Destino: posicao ? "rtls" : "obra", RefID: it.obraId, TiradaEm: it.tiradaEm,
       Lat: it.lat ?? null, Lng: it.lng ?? null, PrecisaoM: it.precisao ?? null,
       Nota: it.nota || null, Ficheiro: caminho,
     }),
@@ -410,6 +414,7 @@ let vista = "camara", filaCache = [], recado = null, leitor = null;
 // ao fim de meia hora numa obra — por isso guardam-se e devolvem-se.
 const _miniaturas = new Map();
 function miniatura(it) {
+  if (!it.foto) return "";
   if (!_miniaturas.has(it.idLocal)) _miniaturas.set(it.idLocal, URL.createObjectURL(it.foto));
   return _miniaturas.get(it.idLocal);
 }
@@ -600,8 +605,12 @@ function pintarCamara() {
     </p>`;
 
   $("#barra").hidden = false;
-  $("#barra").innerHTML = `<button class="disparo" id="btFoto" ${obras.length ? "" : "disabled"}>📷 Fotografar</button>`;
+  $("#barra").innerHTML =
+    `<button class="disparo" id="btFoto" ${obras.length ? "" : "disabled"}>📷 Fotografar</button>
+     <button class="secundario" id="btPos" style="flex:0 0 auto;padding:16px 18px;"
+             ${obras.length ? "" : "disabled"} title="Marcar onde estou">📍</button>`;
   $("#btFoto").onclick = () => $("#ficheiro").click();
+  $("#btPos").onclick = marcarPosicao;
 
   document.querySelectorAll(".abas button[data-v]").forEach(b =>
     b.onclick = () => { vista = b.dataset.v; recado = null; pintar(); });
@@ -701,6 +710,46 @@ $("#ficheiro").onchange = async (ev) => {
   } catch (e) { aviso(e.message, "erro"); }
 };
 
+/* ══════════════════════════════════════════════════════════════════════════
+   Marcar onde estou
+
+   O telemóvel é, para o RTLS da obra, uma tag que anda com uma pessoa. Manda
+   a posição pelo mesmo caminho da fotografia — mesma fila, mesma espera pela
+   rede — só que sem imagem. Quem converte para o referencial do modelo é o
+   OREX, que é quem sabe onde fica a origem da obra.
+
+   Aqui exige-se pontaria: uma posição com 60 m de erro não diz nada a quem
+   quer saber em que piso se está. Abaixo de 30 m aceita-se, acima pergunta-se.
+   ────────────────────────────────────────────────────────────────────────── */
+const PRECISAO_BOA = 30;   // metros
+
+async function marcarPosicao() {
+  const emp = empresasObras().find(e => e.ownerId === +(($("#emp") || {}).value || (ler(G.ultimo) || {}).ownerId))
+            || empresasObras()[0];
+  const obra = emp?.obras.find(o => o.id === +($("#obra") || {}).value);
+  if (!emp || !obra) return aviso("Escolhe primeiro a obra.", "erro");
+
+  aviso("A apurar a posição…", "nota");
+  const onde = await ondeEstou(15000);
+  if (onde.lat == null) return aviso("Não consegui obter a posição. Autoriza a localização e tenta ao ar livre.", "erro");
+
+  if (onde.precisao > PRECISAO_BOA &&
+      !confirm(`A posição só tem ${Math.round(onde.precisao)} m de precisão — dentro de um edifício é normal.\n\n`
+             + "Marcar assim mesmo?")) return aviso(null, "nota");
+
+  const nota = ($("#nota") || {}).value || "";
+  await filaGrav({
+    idLocal: uuid(), tipo: "posicao", ownerId: emp.ownerId, obraId: obra.id,
+    obraNome: `${obra.num ? obra.num + " · " : ""}${obra.nome}`, empresaNome: emp.nome,
+    nota, tiradaEm: new Date().toISOString(), estado: "espera", ...onde,
+  });
+  filaCache = await filaPor();
+  aviso(`Posição marcada (±${Math.round(onde.precisao)} m). ` +
+        (navigator.onLine ? "A enviar…" : "Sobe assim que houver rede."), "ok");
+  pintar();
+  escoarFila();
+}
+
 /* ── Fila ─────────────────────────────────────────────────────────────────── */
 function pintarFila() {
   const rot = { espera: "em espera", enviando: "a enviar", falhou: "falhou" };
@@ -715,7 +764,10 @@ function pintarFila() {
         .sort((a, b) => b.tiradaEm.localeCompare(a.tiradaEm))
         .map(it => `
         <div class="item">
-          <img src="${miniatura(it)}" alt="" />
+          ${it.tipo === "posicao"
+            ? `<div style="width:52px;height:52px;flex:none;border-radius:6px;background:var(--line-2);
+                    display:flex;align-items:center;justify-content:center;font-size:22px;">📍</div>`
+            : `<img src="${miniatura(it)}" alt="" />`}
           <div class="txt">
             <b>${esc(it.obraNome)}</b>
             <small>${esc(it.empresaNome)} · ${new Date(it.tiradaEm).toLocaleString("pt-PT",
