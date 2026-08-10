@@ -1,0 +1,19 @@
+{
+  "name": "OREX Fotografias",
+  "short_name": "Fotos",
+  "description": "Fotografar a obra e enviar, mesmo sem rede.",
+  "id": "/fotografias/",
+  "start_url": "/fotografias/",
+  "scope": "/fotografias/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0F0F0D",
+  "theme_color": "#0F0F0D",
+  "lang": "pt-PT",
+  "categories": ["business", "productivity"],
+  "icons": [
+    { "src": "../app/icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "../app/icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "../app/icone-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

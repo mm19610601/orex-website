@@ -1,0 +1,187 @@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>OREX Localização</title>
+<meta name="description" content="Marcar onde estou na obra." />
+<meta name="theme-color" content="#0F0F0D" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<meta name="apple-mobile-web-app-title" content="Local" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="../app/apple-touch-icon.png" />
+<link rel="icon" href="../app/icone-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;900&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" />
+<link rel="stylesheet" href="../app/comum.css" />
+
+<!--
+  /rtls — marcar onde estou.
+
+  Uma leitura só de GPS dá 20 a 40 m: o telefone responde à primeira com a
+  antena de rede enquanto o GPS ainda apanha satélites. Por isso aqui
+  afina-se — fica a ouvir até vinte segundos e guarda a melhor leitura.
+-->
+
+<style>
+  .medidor{
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    background:var(--paper-2);border:1px solid var(--line);border-radius:12px;padding:20px 12px;margin-bottom:12px;
+  }
+  .medidor .valor{font-family:"Archivo",sans-serif;font-weight:900;font-size:46px;line-height:1;}
+  .medidor .un{font-size:13px;color:var(--steel);}
+  .medidor.bom .valor{color:var(--ok);}
+  .medidor.assim .valor{color:var(--aviso);}
+  .medidor.mau .valor{color:var(--erro);}
+  .barra-prec{height:6px;background:var(--line-2);border-radius:3px;overflow:hidden;width:100%;margin-top:8px;}
+  .barra-prec i{display:block;height:100%;background:currentColor;transition:width .3s;}
+</style>
+
+<header>
+  <div class="marca">OREX</div>
+  <div style="font-size:13px;color:#9A9A90;">localização</div>
+  <div class="quem" id="quem"></div>
+</header>
+
+<main id="ecra"></main>
+<div class="barra" id="barra" hidden></div>
+
+<script src="../app/orex.js"></script>
+<script>
+"use strict";
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
+const ALVO = 8, MAU = 25;
+let recado = null, filaCache = [], aAfinar = false, ultima = null;
+function aviso(txt, tipo = "nota") { recado = txt ? { txt, tipo } : null; pintar(); }
+const barraRecado = () => recado ? `<div class="aviso ${recado.tipo}">${esc(recado.txt)}</div>` : "";
+
+function pintar() {
+  const c = OREX.cred();
+  $("#quem").innerHTML = c ? `${esc(c.utilizador || "")}<br>${esc(c.nome || "")}` : "";
+  if (!c) { $("#barra").hidden = true; return semCredencial(); }
+  return principal();
+}
+
+function semCredencial() {
+  $("#ecra").innerHTML = `
+    <div class="cartao">
+      <h2 style="font-size:20px;margin-bottom:8px;">Este telemóvel ainda não está ligado</h2>
+      <p style="font-size:14px;color:var(--ink-2);">Liga-o uma vez e serve para todas as páginas.</p>
+      <a href="../app/" style="text-decoration:none;"><button style="margin-top:10px;">Ligar o telemóvel</button></a>
+    </div>`;
+}
+
+function classe(m) { return m == null ? "" : m <= ALVO ? "bom" : m <= MAU ? "assim" : "mau"; }
+
+function principal() {
+  const empresas = OREX.empresas();
+  const u = OREX.ultimoAlvo();
+  const emp = empresas.find(e => e.ownerId === u.ownerId) || empresas[0] || null;
+  const obras = emp ? emp.obras : [];
+  const m = ultima?.precisao;
+
+  $("#ecra").innerHTML = `
+    ${barraRecado()}
+    <div class="medidor ${classe(m)}">
+      <div class="valor">${m == null ? "—" : "±" + Math.round(m)}</div>
+      <div class="un">${m == null ? "sem leitura" : "metros de precisão"}</div>
+      ${m != null ? `<div class="barra-prec"><i style="width:${Math.max(4, Math.min(100, 100 - Math.min(m, 50) * 2))}%"></i></div>` : ""}
+      ${m != null && m > MAU ? `<div style="font-size:11.5px;color:var(--steel);margin-top:6px;text-align:center;">
+        Dentro de um edifício é normal. Ao ar livre e parado chega a menos de 10 m.</div>` : ""}
+    </div>
+
+    ${!empresas.length ? `<div class="aviso nota">Ainda não tenho a lista de obras. Liga-te à rede.</div>` : ""}
+    <div class="cartao">
+      ${empresas.length > 1 ? `
+      <div class="campo"><label for="emp">Empresa</label>
+        <select id="emp">${empresas.map(e =>
+          `<option value="${e.ownerId}" ${emp && e.ownerId === emp.ownerId ? "selected" : ""}>${esc(e.nome)}</option>`).join("")}</select>
+      </div>` : ""}
+      <div class="campo" style="margin-bottom:0;"><label for="obra">Obra</label>
+        <select id="obra">${obras.length ? obras.map(o =>
+          `<option value="${o.id}" ${o.id === u.obraId ? "selected" : ""}>${o.num ? o.num + " · " : ""}${esc(o.nome)}</option>`
+        ).join("") : `<option value="">— sem obras activas —</option>`}</select>
+      </div>
+    </div>
+
+    ${filaCache.length ? `<div class="cartao">
+      <div class="eyebrow">Por enviar</div>
+      ${filaCache.map(it => `<div class="item">
+        <div style="width:40px;height:40px;flex:none;border-radius:6px;background:var(--line-2);
+             display:flex;align-items:center;justify-content:center;font-size:18px;">📍</div>
+        <div class="txt"><b>${esc(it.obraNome || "")}</b>
+          <small>${new Date(it.tiradaEm).toLocaleString("pt-PT", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" })}
+          ${it.precisao ? ` · ±${Math.round(it.precisao)} m` : ""}</small></div>
+        <span class="estado ${it.estado === "falhou" ? "falhou" : "espera"}">${it.estado}</span>
+      </div>`).join("")}
+    </div>` : ""}
+
+    <p style="font-size:12px;color:var(--steel);text-align:center;line-height:1.6;">
+      Fica a ouvir o GPS até 20 segundos e guarda a melhor leitura.<br>
+      Sem rede, a posição espera na fila.
+    </p>
+    <div class="rodape"><a href="../app/" style="color:var(--steel);">este telemóvel</a> · orexerp.pt</div>`;
+
+  $("#barra").hidden = false;
+  $("#barra").innerHTML = `<button class="disparo" id="btPos" ${obras.length ? "" : "disabled"}>📍 Marcar posição</button>`;
+  $("#btPos").onclick = marcar;
+  const se = $("#emp");
+  if (se) se.onchange = () => { OREX.guardarUltimoAlvo({ ownerId: +se.value }); pintar(); };
+  $("#obra").onchange = () => OREX.guardarUltimoAlvo({ ownerId: emp?.ownerId, obraId: +$("#obra").value });
+}
+
+async function marcar() {
+  if (aAfinar) return;
+  const empresas = OREX.empresas();
+  const emp = empresas.find(e => e.ownerId === +(($("#emp") || {}).value || OREX.ultimoAlvo().ownerId)) || empresas[0];
+  const obra = emp?.obras.find(o => o.id === +($("#obra") || {}).value);
+  if (!emp || !obra) return aviso("Escolhe primeiro a obra.", "erro");
+
+  aAfinar = true;
+  const bt = $("#btPos"); if (bt) { bt.disabled = true; bt.textContent = "⏳ A afinar…"; }
+  aviso("A afinar… aponta o telefone ao céu e não te mexas.", "nota");
+  const onde = await OREX.afinarPosicao({
+    alvoM: ALVO, segundos: 20,
+    // O número a descer em directo é o que faz a espera valer a pena — e ensina,
+    // sem explicar nada, que ao ar livre e parado se consegue melhor.
+    aoVivo: (m) => { ultima = m; pintar(); },
+  });
+  aAfinar = false;
+  if (onde.lat == null) return aviso("Não consegui obter a posição. Autoriza a localização e tenta ao ar livre.", "erro");
+  ultima = onde;
+
+  if (onde.precisao > MAU && !confirm(
+      `O melhor que consegui foram ${Math.round(onde.precisao)} m de precisão.\n\n`
+      + "Dentro de um edifício é normal — ao ar livre costuma chegar a menos de 10 m.\n\nMarcar assim mesmo?"))
+    return aviso("Posição não marcada.", "nota");
+
+  await OREX.filaGrav({
+    idLocal: OREX.uuid(), tipo: "posicao", ownerId: emp.ownerId, obraId: obra.id,
+    obraNome: `${obra.num ? obra.num + " · " : ""}${obra.nome}`, empresaNome: emp.nome,
+    nota: "", tiradaEm: new Date().toISOString(), estado: "espera", ...onde,
+  });
+  OREX.guardarUltimoAlvo({ ownerId: emp.ownerId, obraId: obra.id });
+  filaCache = await OREX.fila();
+  aviso(`Posição marcada (±${Math.round(onde.precisao)} m). ` +
+        (navigator.onLine ? "A enviar…" : "Sobe assim que houver rede."), "ok");
+  OREX.escoarFila();
+}
+
+/* ── Arranque ─────────────────────────────────────────────────────────────── */
+(async function () {
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+  OREX.aoMudar(async (que, d) => {
+    if (que === "fila") { filaCache = (await OREX.fila()).filter(x => x.tipo === "posicao"); pintar(); }
+    if (que === "revogado") { recado = null; pintar(); aviso(d.porque, "erro"); }
+  });
+  filaCache = (await OREX.fila().catch(() => [])).filter(x => x.tipo === "posicao");
+  pintar();
+  if (OREX.cred()) {
+    OREX.escoarFila();
+    OREX.buscarDestinos().then(() => pintar()).catch(() => {});
+  }
+  window.addEventListener("online", () => OREX.escoarFila());
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) OREX.escoarFila(); });
+})();
+</script>

@@ -1,0 +1,276 @@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>OREX Fotografias</title>
+<meta name="description" content="Fotografar a obra e enviar, mesmo sem rede." />
+<meta name="theme-color" content="#0F0F0D" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<meta name="apple-mobile-web-app-title" content="Fotografias" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="../app/apple-touch-icon.png" />
+<link rel="icon" href="../app/icone-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;900&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" />
+<link rel="stylesheet" href="../app/comum.css" />
+
+<!--
+  /fotografias — uma coisa só: a fotografia chegar à obra certa.
+  O que é comum às quatro páginas vive em /app/orex.js.
+-->
+
+<style>
+  .microfone{margin-top:8px;padding:11px;font-size:15px;
+    background:var(--paper-2);color:var(--ink);border:1px solid var(--line);}
+  .microfone.a-ouvir{background:var(--erro);color:#fff;border-color:var(--erro);animation:pulsa 1.1s ease-in-out infinite;}
+  @keyframes pulsa{0%,100%{box-shadow:0 0 0 0 rgba(163,44,37,0.55);}50%{box-shadow:0 0 0 9px rgba(163,44,37,0);}}
+  @media (prefers-reduced-motion:reduce){.microfone.a-ouvir{animation:none;}}
+  .abas{display:flex;gap:6px;margin-bottom:14px;}
+  .abas button{flex:1;background:transparent;color:var(--steel);border:1px solid transparent;
+               padding:8px;font-size:13.5px;font-weight:700;border-radius:8px;}
+  .abas button.on{background:#fff;color:var(--ink);border-color:var(--line);}
+  .conta{display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-radius:9px;
+         background:var(--ink);color:var(--paper);font-size:11px;line-height:17px;text-align:center;}
+</style>
+
+<header>
+  <div class="marca">OREX</div>
+  <div style="font-size:13px;color:#9A9A90;">fotografias</div>
+  <div class="quem" id="quem"></div>
+</header>
+
+<main id="ecra"></main>
+<div class="barra" id="barra" hidden></div>
+<input type="file" id="ficheiro" accept="image/*" capture="environment" style="display:none" />
+
+<script src="../app/orex.js"></script>
+<script>
+"use strict";
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
+let vista = "camara", filaCache = [], recado = null;
+function aviso(txt, tipo = "nota") { recado = txt ? { txt, tipo } : null; pintar(); }
+const barraRecado = () => recado ? `<div class="aviso ${recado.tipo}">${esc(recado.txt)}</div>` : "";
+
+// As miniaturas são URLs para blobs em memória. Criar um por repintura e nunca
+// o libertar é o caminho para a app ser morta pelo sistema ao fim de meia hora.
+const _mini = new Map();
+function miniatura(it) {
+  if (!it.foto) return "";
+  if (!_mini.has(it.idLocal)) _mini.set(it.idLocal, URL.createObjectURL(it.foto));
+  return _mini.get(it.idLocal);
+}
+function esquecerMiniatura(id) { const u = _mini.get(id); if (u) { URL.revokeObjectURL(u); _mini.delete(id); } }
+
+function pintar() {
+  pararDitado();
+  const c = OREX.cred();
+  $("#quem").innerHTML = c ? `${esc(c.utilizador || "")}<br>${esc(c.nome || "")}` : "";
+  if (!c) { $("#barra").hidden = true; return semCredencial(); }
+  return vista === "fila" ? pintarFila() : pintarCamara();
+}
+
+function semCredencial() {
+  $("#ecra").innerHTML = `
+    ${barraRecado()}
+    <div class="cartao">
+      <h2 style="font-size:20px;margin-bottom:8px;">Este telemóvel ainda não está ligado</h2>
+      <p style="font-size:14px;color:var(--ink-2);">Liga-o uma vez e serve para todas as páginas.</p>
+      <a href="../app/" style="text-decoration:none;"><button style="margin-top:10px;">Ligar o telemóvel</button></a>
+    </div>`;
+}
+
+/* ── Fotografar ───────────────────────────────────────────────────────────── */
+function pintarCamara() {
+  const empresas = OREX.empresas();
+  const u = OREX.ultimoAlvo();
+  const emp = empresas.find(e => e.ownerId === u.ownerId) || empresas[0] || null;
+  const obras = emp ? emp.obras : [];
+
+  $("#ecra").innerHTML = `
+    <div class="abas">
+      <button class="on">Fotografar</button>
+      <button data-v="fila">Por enviar${filaCache.length ? `<span class="conta">${filaCache.length}</span>` : ""}</button>
+    </div>
+    ${barraRecado()}
+    ${!empresas.length ? `<div class="aviso nota">Ainda não tenho a lista de obras.
+        Liga-te à rede e volta a abrir.</div>` : ""}
+    <div class="cartao">
+      ${empresas.length > 1 ? `
+      <div class="campo">
+        <label for="emp">Empresa</label>
+        <select id="emp">${empresas.map(e =>
+          `<option value="${e.ownerId}" ${emp && e.ownerId === emp.ownerId ? "selected" : ""}>${esc(e.nome)}</option>`
+        ).join("")}</select>
+      </div>` : ""}
+      <div class="campo">
+        <label for="obra">Obra</label>
+        <select id="obra">
+          ${obras.length ? obras.map(o =>
+            `<option value="${o.id}" ${o.id === u.obraId ? "selected" : ""}>${o.num ? o.num + " · " : ""}${esc(o.nome)}</option>`
+          ).join("") : `<option value="">— sem obras activas —</option>`}
+        </select>
+      </div>
+      <div class="campo" style="margin-bottom:0;">
+        <label for="nota">Nota <span style="font-weight:400;color:var(--steel);">(opcional)</span></label>
+        <textarea id="nota" placeholder="ex.: betonagem do P1"></textarea>
+        <button type="button" id="btDitar" class="microfone">🎤 Ditar a nota</button>
+        <p id="dicaDitado" style="font-size:11.5px;color:var(--steel);margin:6px 0 0;"></p>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--steel);text-align:center;">
+      A fotografia fica guardada no telemóvel e sobe sozinha assim que houver rede.
+    </p>`;
+
+  $("#barra").hidden = false;
+  $("#barra").innerHTML = `<button class="disparo" id="btFoto" ${obras.length ? "" : "disabled"}>📷 Fotografar</button>`;
+  $("#btFoto").onclick = () => $("#ficheiro").click();
+  document.querySelectorAll(".abas button[data-v]").forEach(b =>
+    b.onclick = () => { vista = b.dataset.v; recado = null; pintar(); });
+  const se = $("#emp");
+  if (se) se.onchange = () => { OREX.guardarUltimoAlvo({ ownerId: +se.value }); pintar(); };
+  $("#obra").onchange = () => OREX.guardarUltimoAlvo({ ownerId: emp?.ownerId, obraId: +$("#obra").value });
+  ligarDitado();
+}
+
+$("#ficheiro").onchange = async (ev) => {
+  const f = ev.target.files?.[0];
+  ev.target.value = "";
+  if (!f) return;
+  pararDitado();
+  const empresas = OREX.empresas();
+  const emp = empresas.find(e => e.ownerId === +(($("#emp") || {}).value || OREX.ultimoAlvo().ownerId)) || empresas[0];
+  const obra = emp?.obras.find(o => o.id === +($("#obra") || {}).value);
+  if (!emp || !obra) return aviso("Escolhe primeiro a obra.", "erro");
+  const nota = ($("#nota") || {}).value || "";
+
+  aviso("A preparar a fotografia…", "nota");
+  try {
+    const [foto, onde] = await Promise.all([OREX.encolher(f), OREX.ondeEstou()]);
+    await OREX.filaGrav({
+      idLocal: OREX.uuid(), ownerId: emp.ownerId, obraId: obra.id,
+      obraNome: `${obra.num ? obra.num + " · " : ""}${obra.nome}`, empresaNome: emp.nome,
+      nota, foto, tiradaEm: new Date().toISOString(), estado: "espera", ...onde,
+    });
+    OREX.guardarUltimoAlvo({ ownerId: emp.ownerId, obraId: obra.id });
+    filaCache = await OREX.fila();
+    aviso(navigator.onLine ? "Guardada. A enviar…" : "Guardada. Sobe assim que houver rede.", "ok");
+    OREX.escoarFila();
+  } catch (e) { aviso(e.message, "erro"); }
+};
+
+/* ── Ditar ────────────────────────────────────────────────────────────────── */
+const Reconhecimento = window.SpeechRecognition || window.webkitSpeechRecognition;
+let _ouvinte = null;
+function pararDitado() { if (_ouvinte) { try { _ouvinte.stop(); } catch {} _ouvinte = null; } }
+
+function ligarDitado() {
+  const bt = $("#btDitar"), campo = $("#nota"), dica = $("#dicaDitado");
+  if (!bt) return;
+  if (!Reconhecimento) {
+    bt.disabled = true; bt.style.opacity = 0.35;
+    dica.textContent = "Este telemóvel não sabe ditar dentro da app. O teclado do telefone costuma ter microfone.";
+    return;
+  }
+  bt.onclick = () => {
+    if (_ouvinte) { try { _ouvinte.stop(); } catch {} return; }
+    const r = new Reconhecimento();
+    r.lang = "pt-PT"; r.continuous = true; r.interimResults = true;
+    const jaLa = campo.value.trim();
+    let firme = "";
+    r.onstart = () => { bt.classList.add("a-ouvir"); bt.textContent = "⏹ Parar de ouvir"; dica.textContent = "A ouvir… toca para parar."; };
+    r.onresult = (ev) => {
+      let porFirmar = "";
+      for (let i = ev.resultIndex; i < ev.results.length; i++) {
+        const t = ev.results[i][0].transcript;
+        if (ev.results[i].isFinal) firme += t; else porFirmar += t;
+      }
+      campo.value = [jaLa, (firme + porFirmar).trim()].filter(Boolean).join(" ").replace(/\s+/g, " ");
+    };
+    r.onerror = (ev) => {
+      dica.textContent = ev.error === "not-allowed" ? "Sem autorização para o microfone. Podes escrever à mão."
+        : ev.error === "no-speech" ? "Não ouvi nada." : "O ditado falhou. Podes escrever à mão.";
+    };
+    r.onend = () => {
+      _ouvinte = null; bt.classList.remove("a-ouvir"); bt.textContent = "🎤 Ditar a nota";
+      if (!/autoriza|falhou/.test(dica.textContent)) dica.textContent = "";
+      campo.value = campo.value.trim();
+    };
+    _ouvinte = r;
+    try { r.start(); } catch { _ouvinte = null; dica.textContent = "Não consegui começar a ouvir."; }
+  };
+}
+
+/* ── Fila ─────────────────────────────────────────────────────────────────── */
+function pintarFila() {
+  const rot = { espera: "em espera", enviando: "a enviar", falhou: "falhou" };
+  $("#ecra").innerHTML = `
+    <div class="abas">
+      <button data-v="camara">Fotografar</button>
+      <button class="on">Por enviar${filaCache.length ? `<span class="conta">${filaCache.length}</span>` : ""}</button>
+    </div>
+    ${barraRecado()}
+    <div class="cartao">
+      ${filaCache.length ? filaCache.sort((a, b) => b.tiradaEm.localeCompare(a.tiradaEm)).map(it => `
+        <div class="item">
+          ${it.tipo === "posicao"
+            ? `<div style="width:52px;height:52px;flex:none;border-radius:6px;background:var(--line-2);
+                    display:flex;align-items:center;justify-content:center;font-size:22px;">📍</div>`
+            : `<img src="${miniatura(it)}" alt="" />`}
+          <div class="txt">
+            <b>${esc(it.obraNome)}</b>
+            <small>${esc(it.empresaNome)} · ${new Date(it.tiradaEm).toLocaleString("pt-PT",
+              { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</small>
+            ${it.erro ? `<small style="color:var(--erro);display:block;">${esc(it.erro)}</small>` : ""}
+          </div>
+          <span class="estado ${it.estado === "falhou" ? "falhou" : it.estado === "enviando" ? "envio" : "espera"}">
+            ${rot[it.estado] || it.estado}</span>
+          <button class="perigo pequeno" data-apaga="${it.idLocal}" style="flex:none;padding:6px 9px;">✕</button>
+        </div>`).join("")
+        : `<div class="vazio">Nada por enviar.<br>Tudo o que fotografaste já chegou ao OREX.</div>`}
+    </div>
+    <div class="cartao">
+      <div class="linha">
+        <button class="secundario" id="btEnvia">Tentar agora</button>
+        <a href="../app/" style="flex:1;text-decoration:none;"><button class="secundario" style="width:100%;">Este telemóvel</button></a>
+      </div>
+    </div>
+    <div class="rodape">orexerp.pt</div>`;
+
+  $("#barra").hidden = true;
+  document.querySelectorAll(".abas button[data-v]").forEach(b =>
+    b.onclick = () => { vista = b.dataset.v; recado = null; pintar(); });
+  document.querySelectorAll("[data-apaga]").forEach(b => b.onclick = async () => {
+    if (!confirm("Apagar esta fotografia sem a enviar?")) return;
+    await OREX.filaTira(b.dataset.apaga); esquecerMiniatura(b.dataset.apaga);
+    filaCache = await OREX.fila(); pintar();
+  });
+  $("#btEnvia").onclick = async () => {
+    if (!navigator.onLine) return aviso("Sem rede. Fica na fila.", "nota");
+    aviso("A enviar…", "nota");
+    for (const it of await OREX.fila()) { delete it.proxima; await OREX.filaGrav(it); }
+    await OREX.escoarFila(true);
+    filaCache = await OREX.fila();
+    aviso(filaCache.length ? "Ainda ficaram algumas por enviar." : "Está tudo enviado.", filaCache.length ? "nota" : "ok");
+  };
+}
+
+/* ── Arranque ─────────────────────────────────────────────────────────────── */
+(async function () {
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+  OREX.aoMudar(async (que, d) => {
+    if (que === "fila") { filaCache = await OREX.fila(); pintar(); }
+    if (que === "revogado") { recado = null; pintar(); aviso(d.porque, "erro"); }
+  });
+  filaCache = await OREX.fila().catch(() => []);
+  pintar();
+  if (OREX.cred()) {
+    OREX.escoarFila();
+    OREX.buscarDestinos().then(() => pintar()).catch(() => {});
+  }
+  window.addEventListener("online", () => OREX.escoarFila());
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) OREX.escoarFila(); });
+  setInterval(() => { if (filaCache.length) OREX.escoarFila(); }, 60000);
+})();
+</script>

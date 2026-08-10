@@ -1,0 +1,88 @@
+/* O aspecto partilhado pelas quatro páginas. É o mesmo do orexerp.pt — papel,
+   tinta e as mesmas letras —, porque uma app que não se parece com o site
+   parece de outra empresa. */
+:root{
+  --paper:#F1F0EB; --paper-2:#FAFAF6; --ink:#0F0F0D; --ink-2:#37372F; --steel:#8A8A80;
+  --line:rgba(15,15,13,0.20); --line-2:rgba(15,15,13,0.10);
+  --ok:#1F7A48; --erro:#A32C25; --aviso:#8A6100;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;height:100%;}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased;
+  display:flex; flex-direction:column;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+h1,h2{font-family:"Archivo",system-ui,sans-serif;margin:0;letter-spacing:-0.02em;line-height:1.1;}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace;}
+
+header{
+  background:var(--ink); color:var(--paper);
+  padding:calc(10px + env(safe-area-inset-top)) 16px 10px;
+  display:flex; align-items:center; gap:10px; flex:none;
+}
+header .marca{font-family:"Archivo",system-ui,sans-serif;font-weight:900;letter-spacing:0.16em;font-size:15px;}
+header .quem{margin-left:auto;font-size:11px;color:#9A9A90;text-align:right;line-height:1.25;}
+header a{color:#9A9A90;text-decoration:none;font-size:12px;}
+
+main{flex:1;overflow-y:auto;padding:16px;padding-bottom:96px;}
+.cartao{background:var(--paper-2);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px;}
+.eyebrow{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:0.2em;
+         text-transform:uppercase;color:var(--steel);margin-bottom:8px;}
+label{display:block;font-size:12px;color:var(--ink-2);margin:0 0 4px;font-weight:600;}
+select,input,textarea{
+  width:100%;font:inherit;font-size:16px;padding:11px 12px;border:1px solid var(--line);
+  border-radius:8px;background:#fff;color:var(--ink);
+}
+textarea{min-height:70px;resize:vertical;}
+.campo{margin-bottom:12px;}
+
+button{
+  font:inherit;font-weight:700;border:none;border-radius:8px;padding:13px 16px;
+  background:var(--ink);color:var(--paper);cursor:pointer;width:100%;
+}
+button.secundario{background:transparent;color:var(--ink);border:1px solid var(--line);}
+button.perigo{background:transparent;color:var(--erro);border:1px solid var(--erro);}
+button:disabled{opacity:0.45;}
+button.pequeno{padding:8px 12px;font-size:13px;width:auto;}
+.linha{display:flex;gap:8px;}
+.linha>*{flex:1;}
+
+.aviso{border-radius:8px;padding:10px 12px;font-size:13.5px;line-height:1.45;margin-bottom:12px;}
+.aviso.erro{background:rgba(163,44,37,0.10);color:var(--erro);}
+.aviso.ok{background:rgba(31,122,72,0.12);color:var(--ok);}
+.aviso.nota{background:rgba(138,97,0,0.11);color:var(--aviso);}
+
+.barra{
+  position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  background:linear-gradient(to top,var(--paper) 72%,rgba(241,240,235,0));
+  display:flex;gap:10px;align-items:center;
+}
+.barra button{flex:1;font-size:17px;padding:16px;}
+
+.item{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line-2);}
+.item:first-child{border-top:none;}
+.item img{width:52px;height:52px;object-fit:cover;border-radius:6px;flex:none;background:var(--line-2);}
+.item .txt{flex:1;min-width:0;font-size:13px;}
+.item .txt b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.item .txt small{color:var(--steel);font-size:11.5px;}
+.estado{font-size:10.5px;font-family:"JetBrains Mono",ui-monospace,monospace;text-transform:uppercase;
+        letter-spacing:0.08em;padding:3px 7px;border-radius:4px;flex:none;}
+.estado.espera{background:rgba(138,97,0,0.14);color:var(--aviso);}
+.estado.envio{background:rgba(15,15,13,0.08);color:var(--ink-2);}
+.estado.falhou{background:rgba(163,44,37,0.12);color:var(--erro);}
+
+.vazio{text-align:center;color:var(--steel);font-size:13.5px;padding:22px 10px;}
+.rodape{font-size:11px;color:var(--steel);text-align:center;padding:8px 0 4px;}
+
+/* Os atalhos do índice — uma porta por página. */
+.portas{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));}
+.porta{
+  display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none;color:var(--ink);
+  background:var(--paper-2);border:1px solid var(--line);border-radius:12px;padding:18px 12px;
+}
+.porta .ic{font-size:30px;}
+.porta b{font-size:14px;}
+.porta small{color:var(--steel);font-size:11.5px;text-align:center;line-height:1.4;}

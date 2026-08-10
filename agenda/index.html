@@ -1,0 +1,257 @@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>OREX Agenda</title>
+<meta name="description" content="O que aconteceu na obra e o que está marcado." />
+<meta name="theme-color" content="#0F0F0D" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<meta name="apple-mobile-web-app-title" content="Agenda" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="../app/apple-touch-icon.png" />
+<link rel="icon" href="../app/icone-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;900&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" />
+<link rel="stylesheet" href="../app/comum.css" />
+
+<!--
+  /agenda — o que aconteceu e o que está marcado, na mesma linha de tempo.
+  A parte do passado é uma VISTA sobre o que já se regista noutros sítios; só
+  as marcações são dados próprios.
+
+  Ao contrário das outras páginas, esta precisa de rede para ler: o que mostra
+  vive na base, não no telemóvel. Sem rede diz-o, em vez de aparecer vazia.
+-->
+
+<style>
+  .dia{margin:18px 0 8px;font-family:"Archivo",sans-serif;font-weight:800;font-size:13px;
+       letter-spacing:.02em;color:var(--ink-2);position:sticky;top:0;background:var(--paper);
+       padding:6px 0;border-bottom:1px solid var(--line-2);z-index:2;}
+  .dia.hoje{color:var(--erro);}
+  .ev{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line-2);align-items:flex-start;}
+  .ev .hora{font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--steel);
+            width:44px;flex:none;padding-top:2px;}
+  .ev .ic{font-size:17px;width:24px;flex:none;text-align:center;}
+  .ev .txt{flex:1;min-width:0;}
+  .ev .txt b{font-size:13.5px;font-weight:600;display:block;}
+  .ev .txt small{color:var(--steel);font-size:11.5px;}
+  .ev.futuro{background:rgba(138,97,0,0.05);border-radius:6px;padding-left:6px;padding-right:6px;}
+  .filtros{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+  .filtros button{flex:none;width:auto;padding:5px 12px;font-size:12.5px;
+                  background:transparent;color:var(--steel);border:1px solid var(--line);}
+  .filtros button.on{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+</style>
+
+<header>
+  <div class="marca">OREX</div>
+  <div style="font-size:13px;color:#9A9A90;">agenda</div>
+  <div class="quem" id="quem"></div>
+</header>
+
+<main id="ecra"></main>
+<div class="barra" id="barra" hidden></div>
+
+<script src="../app/orex.js"></script>
+<script>
+"use strict";
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
+
+const ICONES = { marcacao:"🗓", media:"📷", documento:"📄", comunicacao:"✉️", submissao:"📋", auto:"📐" };
+const ICONE_TIPO = { visita:"👷", entrega:"🚚", betonagem:"🧱", reuniao:"💬", inspeccao:"🔍", prazo:"⏰", outro:"🗓" };
+const DIAS = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
+const MESES = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+
+let linhas = null, filtro = "", obraSel = "", dias = 30, recado = null, erroRede = null, novaAberta = false;
+function aviso(t, tipo = "nota") { recado = t ? { txt:t, tipo } : null; pintar(); }
+const todasAsObras = () =>
+  OREX.empresas().flatMap(e => (e.obras || []).map(o => ({ ...o, ownerId: e.ownerId, emp: e.nome })));
+// Uma data em hora local para o <input datetime-local>, que não aceita ISO com Z.
+const paraCaixa = (d) => new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 16);
+
+const chaveDia = (d) => new Date(d).toISOString().slice(0, 10);
+function rotuloDia(iso) {
+  const d = new Date(iso + "T12:00:00");
+  const hoje = new Date().toISOString().slice(0, 10);
+  const amanha = new Date(Date.now() + 864e5).toISOString().slice(0, 10);
+  const base = `${DIAS[d.getDay()]}, ${d.getDate()} ${MESES[d.getMonth()]} ${d.getFullYear()}`;
+  return iso === hoje ? `hoje · ${base}` : iso === amanha ? `amanhã · ${base}` : base;
+}
+
+// A agenda vem do Supabase, não do OREX. É a mesma razão das outras páginas:
+// o servidor do OREX corre no computador de alguém e pode não estar ligado —
+// e quem abre isto está em obra, do lado de fora da rede da empresa.
+//
+// A vista precisa de juntas que o PostgREST não faz, por isso está numa função
+// (mov_agenda, migração 151), que devolve só o que este aparelho pode ver.
+async function carregar() {
+  erroRede = null;
+  try {
+    const c = OREX.cred(), tok = await OREX.autenticar();
+    const res = await fetch(`${c.url}/rest/v1/rpc/mov_agenda`, {
+      method: "POST",
+      headers: { apikey: c.chave, Authorization: `Bearer ${tok}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_obra: obraSel ? +obraSel : null, p_dias: dias }),
+    });
+    if (!res.ok) throw new Error(`o servidor respondeu ${res.status}`);
+    linhas = (await res.json()) || [];
+  } catch (e) {
+    erroRede = e.message; linhas = [];
+  }
+  pintar();
+}
+
+function pintar() {
+  const c = OREX.cred();
+  $("#quem").innerHTML = c ? `${esc(c.utilizador || "")}<br>${esc(c.nome || "")}` : "";
+  if (!c) { $("#barra").hidden = true; return semCredencial(); }
+
+  const obras = todasAsObras();
+  const agora = Date.now();
+  const vis = (linhas || []).filter(l => !filtro || l.fonte === filtro);
+  const porDia = new Map();
+  for (const l of vis) {
+    const k = chaveDia(l.quando);
+    if (!porDia.has(k)) porDia.set(k, []);
+    porDia.get(k).push(l);
+  }
+  const dias = [...porDia.keys()].sort().reverse();
+  const hoje = new Date().toISOString().slice(0, 10);
+
+  $("#ecra").innerHTML = `
+    ${recado ? `<div class="aviso ${recado.tipo}">${esc(recado.txt)}</div>` : ""}
+    ${erroRede ? `<div class="aviso erro">Não consegui ler a agenda: ${esc(erroRede)}.<br>
+       <small>Esta página precisa de rede — o que mostra vive na base, não no telemóvel.</small></div>` : ""}
+
+    ${novaAberta ? `<div class="cartao" style="margin-bottom:14px;">
+      <div class="campo"><label for="mTitulo">O que se marca</label>
+        <input id="mTitulo" type="text" placeholder="Betonagem da laje do piso 1" autocomplete="off" /></div>
+      <div class="campo"><label for="mTipo">Tipo</label>
+        <select id="mTipo">${["visita","entrega","betonagem","reuniao","inspeccao","prazo","outro"]
+          .map(t => `<option value="${t}">${t}</option>`).join("")}</select></div>
+      <div class="campo"><label for="mQuando">Quando</label>
+        <input id="mQuando" type="datetime-local" value="${paraCaixa(new Date(agora + 864e5))}" /></div>
+      <div class="campo"><label for="mObra">Obra</label>
+        <select id="mObra">${obras.map(o =>
+          `<option value="${o.id}" ${String(o.id) === obraSel ? "selected" : ""}>${o.num ? o.num + " · " : ""}${esc(o.nome)}</option>`).join("")}</select></div>
+      <div class="campo"><label for="mLocal">Onde (opcional)</label>
+        <input id="mLocal" type="text" placeholder="Estaleiro" autocomplete="off" /></div>
+      <button id="mGravar">Marcar</button>
+      <button id="mFechar" class="secundario">Deixa estar</button>
+    </div>` : ""}
+
+    ${obras.length > 1 ? `<div class="campo">
+      <select id="obra">
+        <option value="">Todas as obras</option>
+        ${obras.map(o => `<option value="${o.id}" ${String(o.id) === obraSel ? "selected" : ""}>${o.num ? o.num + " · " : ""}${esc(o.nome)}</option>`).join("")}
+      </select></div>` : ""}
+
+    <div class="filtros">
+      ${/* Correspondência e submissões ficam de fora no telemóvel: é matéria de
+            escritório e a mais sensível de todas. Quem está em obra quer ver o
+            que se passou no estaleiro. */
+        [["","Tudo"],["marcacao","Marcado"],["media","Fotografias"],
+         ["documento","Documentos"],["auto","Autos"]].map(([k, r]) =>
+        `<button data-f="${k}" class="${filtro === k ? "on" : ""}">${r}</button>`).join("")}
+    </div>
+
+    ${!dias.length
+      ? `<div class="vazio">${erroRede ? "" : "Nada a mostrar neste filtro."}</div>`
+      : dias.map(k => `
+        <div class="dia ${k === hoje ? "hoje" : ""}">${rotuloDia(k)}</div>
+        ${porDia.get(k).sort((a, b) => new Date(b.quando) - new Date(a.quando)).map(l => {
+          const futuro = new Date(l.quando).getTime() > agora;
+          const ic = l.fonte === "marcacao" ? (ICONE_TIPO[l.tipo] || "🗓") : (ICONES[l.fonte] || "•");
+          return `<div class="ev ${futuro ? "futuro" : ""}">
+            <div class="hora">${new Date(l.quando).toLocaleTimeString("pt-PT", { hour:"2-digit", minute:"2-digit" })}</div>
+            <div class="ic">${ic}</div>
+            <div class="txt">
+              <b>${esc(l.titulo || "(sem título)")}</b>
+              <small>${esc(l.tipo || l.fonte)}${l.onde ? " · " + esc(l.onde) : ""}${l.quem ? " · " + esc(l.quem) : ""}
+              ${l.estado ? " · " + esc(l.estado) : ""}</small>
+            </div>
+          </div>`;
+        }).join("")}`).join("")}
+
+    ${dias < 365 && dias > 0 && linhas ? `<div style="text-align:center;margin-top:16px;">
+      <button id="btMais" class="secundario" style="width:auto;padding:7px 18px;font-size:12.5px;">
+        Ver mais atrás (${dias} dias → ${dias * 4})</button></div>` : ""}
+
+    <div class="rodape"><a href="../app/" style="color:var(--steel);">este telemóvel</a> · orexerp.pt</div>`;
+
+  $("#barra").hidden = false;
+  $("#barra").innerHTML = `<button id="btNova">${novaAberta ? "✕ Fechar" : "🗓 Marcar"}</button>`;
+  $("#btNova").onclick = () => { novaAberta = !novaAberta; pintar(); if (novaAberta) $("#mTitulo")?.focus(); };
+  if (novaAberta) {
+    $("#mGravar").onclick = gravarMarcacao;
+    $("#mFechar").onclick = () => { novaAberta = false; pintar(); };
+  }
+  document.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { filtro = b.dataset.f; pintar(); });
+  const so = $("#obra");
+  if (so) so.onchange = () => { obraSel = so.value; carregar(); };
+  const bm = $("#btMais");
+  if (bm) bm.onclick = () => { dias = Math.min(dias * 4, 365); carregar(); };
+}
+
+function semCredencial() {
+  $("#ecra").innerHTML = `
+    <div class="cartao">
+      <h2 style="font-size:20px;margin-bottom:8px;">Este telemóvel ainda não está ligado</h2>
+      <a href="../app/" style="text-decoration:none;"><button style="margin-top:10px;">Ligar o telemóvel</button></a>
+    </div>`;
+}
+
+// Marcar. Um formulário pequeno, e não três caixas de prompt seguidas: quem
+// está em obra a marcar uma betonagem com uma mão não passa por isso.
+async function gravarMarcacao() {
+  const obras = todasAsObras();
+  const obraId = +($("#mObra")?.value || obraSel || 0) || null;
+  const emp = obras.find(o => o.id === obraId);
+  const ownerId = emp ? emp.ownerId : (OREX.empresas()[0] || {}).ownerId;
+  if (!ownerId) return aviso("Ainda não sei a que empresa isto pertence.", "erro");
+
+  const titulo = ($("#mTitulo").value || "").trim();
+  if (!titulo) return aviso("Falta dizer o que se marca.", "erro");
+  const quando = $("#mQuando").value;
+  if (!quando) return aviso("Falta a data.", "erro");
+  const iso = new Date(quando).toISOString();
+
+  $("#mGravar").disabled = true;
+  try {
+    const c = OREX.cred(), tok = await OREX.autenticar();
+    const r = await fetch(`${c.url}/rest/v1/Age_Marcacao`, {
+      method: "POST",
+      // return=minimal de propósito: o aparelho tem licença para ESCREVER uma
+      // marcação, não para ler a tabela. Pedir o registo de volta dava 403.
+      headers: { apikey: c.chave, Authorization: `Bearer ${tok}`,
+                 "Content-Type": "application/json", Prefer: "return=minimal" },
+      body: JSON.stringify({
+        OwnerID: ownerId, ObraID: obraId, Titulo: titulo,
+        Tipo: $("#mTipo").value, Comeca: iso,
+        Local: ($("#mLocal").value || "").trim() || null,
+      }),
+    });
+    if (!r.ok) {
+      const d = await r.json().catch(() => ({}));
+      throw new Error(r.status === 401 || r.status === 403
+        ? "Sem autorização para marcar nesta obra."
+        : (d.message || `o servidor respondeu ${r.status}`));
+    }
+    novaAberta = false;
+    aviso("Marcado.", "ok");
+    carregar();
+  } catch (e) {
+    aviso(e.message, "erro");
+    const b = $("#mGravar"); if (b) b.disabled = false;
+  }
+}
+
+/* ── Arranque ─────────────────────────────────────────────────────────────── */
+(async function () {
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+  OREX.aoMudar((que, d) => { if (que === "revogado") { recado = null; pintar(); aviso(d.porque, "erro"); } });
+  pintar();
+  if (OREX.cred()) { OREX.buscarDestinos().catch(() => {}); carregar(); }
+})();
+</script>
