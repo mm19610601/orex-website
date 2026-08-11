@@ -98,6 +98,32 @@ async function chamarAuth(caminho, corpo) {
   return { ok: r.ok, d: await r.json().catch(() => ({})) };
 }
 
+// O QR traz um bilhete, não uma credencial. Troca-se aqui, por dentro do
+// HTTPS — é o passo que faz com que fotografar o código no ecrã não sirva de
+// nada a ninguém. E serve uma vez só: à segunda tentativa já não existe.
+//
+//   É a ÚNICA chamada que vai com a chave publicável e sem sessão, porque
+//   neste momento o telemóvel ainda não tem nenhuma. É por isso que a
+//   mov_resgatar fica aberta ao papel anon de propósito (migração 152) — e é
+//   por isso que ela própria valida o código, o prazo e o aparelho por dentro.
+//
+//   Esta função ficou de fora quando o app/index.html se dividiu em orex.js:
+//   estava exportada e não estava declarada, e o ficheiro inteiro rebentava a
+//   carregar com "resgatar is not defined". Como o window.OREX nunca chegava a
+//   existir, morriam as quatro páginas, não só o emparelhamento.
+async function resgatar(url, chave, codigo) {
+  const r = await fetch(`${url}/rest/v1/rpc/mov_resgatar`, {
+    method: "POST",
+    headers: { apikey: chave, "Content-Type": "application/json" },
+    body: JSON.stringify({ p_codigo: codigo }),
+  });
+  const d = await r.json().catch(() => null);
+  if (!r.ok) throw new Error(`O OREX não respondeu ao emparelhamento (${r.status}).`);
+  if (!d || !d.email) throw new Error(
+    "Este código já foi usado, expirou, ou o aparelho foi revogado. Gera outro no OREX.");
+  return d;
+}
+
 async function autenticar() {
   const c = cred();
   if (!c) throw new Error("Este telemóvel ainda não está emparelhado.");
