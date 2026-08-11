@@ -105,7 +105,7 @@ function pintarEmparelhar() {
       <h2 style="font-size:22px;margin-bottom:8px;">Ligar este telemóvel</h2>
       <p style="font-size:14px;color:var(--ink-2);margin-bottom:4px;">
         No OREX do computador: <b>Admin → Aparelhos móveis</b>, regista o aparelho e aparece um QR.
-        Lê-o aqui. O código serve <b>uma vez</b> e caduca em 15 minutos.
+        Lê-o aqui. O código serve <b>uma vez</b> e caduca em 1 hora.
       </p>
     </div>
     <div class="cartao">
@@ -183,7 +183,7 @@ async function emparelhar(carga) {
     aviso("Telemóvel ligado. Escolhe o que queres fazer.", "ok");
   } catch (e) {
     OREX.esquecerTudo();
-    aviso(e.message + " (Se o QR tiver mais de 15 minutos, já expirou — gera outro.)", "erro");
+    aviso(e.message + " (Se o QR tiver mais de uma hora, já expirou — gera outro.)", "erro");
   }
 }
 
