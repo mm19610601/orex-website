@@ -41,6 +41,14 @@
   .filtros button{flex:none;width:auto;padding:5px 12px;font-size:12.5px;
                   background:transparent;color:var(--steel);border:1px solid var(--line);}
   .filtros button.on{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+  /* As duas caras do mesmo objecto — prazo ou hora — coladas uma a` outra, para
+     se lerem como UMA pergunta com duas respostas e nao como dois botoes. */
+  .duplo{display:flex;}
+  .duplo button{flex:1;width:auto;padding:7px 10px;font-size:13px;
+                background:transparent;color:var(--steel);border:1px solid var(--line);}
+  .duplo button:first-child{border-radius:8px 0 0 8px;border-right:none;}
+  .duplo button:last-child{border-radius:0 8px 8px 0;}
+  .duplo button.on{background:var(--ink);color:var(--paper);border-color:var(--ink);}
 </style>
 
 <header>
@@ -67,6 +75,47 @@ let linhas = null, filtro = "", obraSel = "", dias = 30, recado = null, erroRede
 function aviso(t, tipo = "nota") { recado = t ? { txt:t, tipo } : null; pintar(); }
 const todasAsObras = () =>
   OREX.empresas().flatMap(e => (e.obras || []).map(o => ({ ...o, ownerId: e.ownerId, emp: e.nome })));
+// OS MESMOS CAMPOS QUE NO COMPUTADOR, e não é um capricho de coerência.
+//
+//   Esta página ficou parada no modelo antigo: perguntava um «Tipo» — visita,
+//   betonagem, prazo — que MISTURAVA DOIS EIXOS numa pergunta só. «Prazo» é a
+//   forma de uma coisa; «betonagem» é a espécie dela. Postos lado a lado no
+//   mesmo menu, obrigavam a escolher entre duas perguntas diferentes.
+//
+//   No computador isso já foi separado: pergunta-se DE QUÊ (o âmbito) e, quando
+//   faz sentido, O QUE É (a espécie). O `Tipo` da base deriva das duas.
+//
+//   Enquanto o telemóvel escrevia à maneira antiga, o que entrava por aqui não
+//   tinha âmbito nenhum — caía todo no mesmo saco e não aparecia onde devia.
+const AMBITOS = [
+  ["pessoal",     "🔒 Pessoal (só eu vejo)"],
+  ["geral",       "Geral"],
+  ["obra",        "Obra"],
+  ["compras",     "Compras"],
+  ["seguranca",   "Segurança"],
+  ["qualidade",   "Qualidade"],
+  ["equipamento", "Equipamento"],
+  ["rh",          "Pessoal da empresa"],
+  ["financeiro",  "Financeiro"],
+  ["comercial",   "Comercial"],
+  ["interna",     "Interna"],
+];
+
+// Só aparece onde faz sentido: uma betonagem numa questão de recursos humanos
+// não é nada. E é opcional — a maioria do que se marca não é nenhuma destas.
+const ESPECIES_OBRA = [
+  ["", "—"], ["visita", "visita"], ["entrega", "entrega"], ["betonagem", "betonagem"],
+  ["reuniao", "reunião"], ["inspeccao", "inspecção"],
+];
+
+// Um dia para o <input type="date">.
+const paraDia = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
+
+// As duas caras do mesmo objecto: uma coisa tem PRAZO (até um dia) ou HORA
+// (começa a uma hora), nunca as duas — é o que a base exige desde a 188.
+let comHora = false;
+let ambitoSel = "geral";
+
 // Uma data em hora local para o <input datetime-local>, que não aceita ISO com Z.
 const paraCaixa = (d) => new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 16);
 
@@ -242,11 +291,22 @@ function pintar() {
     ${novaAberta ? `<div class="cartao" style="margin-bottom:14px;">
       <div class="campo"><label for="mTitulo">O que se marca</label>
         <input id="mTitulo" type="text" placeholder="Betonagem da laje do piso 1" autocomplete="off" /></div>
-      <div class="campo"><label for="mTipo">Tipo</label>
-        <select id="mTipo">${["visita","entrega","betonagem","reuniao","inspeccao","prazo","outro"]
-          .map(t => `<option value="${t}">${t}</option>`).join("")}</select></div>
-      <div class="campo"><label for="mQuando">Quando</label>
-        <input id="mQuando" type="datetime-local" value="${paraCaixa(new Date(agora + 864e5))}" /></div>
+      <div class="campo"><label>Quando</label>
+        <div class="duplo">
+          <button type="button" data-q="prazo" class="${comHora ? "" : "on"}">até uma data</button>
+          <button type="button" data-q="hora"  class="${comHora ? "on" : ""}">a uma hora</button>
+        </div></div>
+      <div class="campo">${comHora
+        ? `<label for="mQuando">Dia e hora</label>
+           <input id="mQuando" type="datetime-local" value="${paraCaixa(new Date(agora + 864e5))}" />`
+        : `<label for="mPrazo">Até</label>
+           <input id="mPrazo" type="date" value="${paraDia(new Date(agora + 864e5))}" />`}</div>
+      <div class="campo"><label for="mAmbito">De quê</label>
+        <select id="mAmbito">${AMBITOS.map(([v, t]) =>
+          `<option value="${v}" ${v === ambitoSel ? "selected" : ""}>${esc(t)}</option>`).join("")}</select></div>
+      ${ambitoSel === "obra" && comHora ? `<div class="campo"><label for="mEspecie">O que é</label>
+        <select id="mEspecie">${ESPECIES_OBRA.map(([v, t]) =>
+          `<option value="${v}">${esc(t)}</option>`).join("")}</select></div>` : ""}
       <div class="campo"><label for="mObra">Obra</label>
         <select id="mObra">${obras.map(o =>
           `<option value="${o.id}" ${String(o.id) === obraSel ? "selected" : ""}>${o.num ? o.num + " · " : ""}${esc(o.nome)}</option>`).join("")}</select></div>
@@ -313,6 +373,13 @@ function pintar() {
   if (novaAberta) {
     $("#mGravar").onclick = gravarMarcacao;
     $("#mFechar").onclick = () => { novaAberta = false; pintar(); };
+    // Mudar de eixo redesenha o formulário: a caixa da data muda, e a espécie
+    // aparece ou desaparece conforme o âmbito.
+    document.querySelectorAll("[data-q]").forEach(b => b.onclick = () => {
+      comHora = b.dataset.q === "hora"; pintar();
+    });
+    const a = $("#mAmbito");
+    if (a) a.onchange = () => { ambitoSel = a.value; pintar(); };
   }
   document.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { filtro = b.dataset.f; pintar(); });
   const so = $("#obra");
@@ -340,9 +407,23 @@ async function gravarMarcacao() {
 
   const titulo = ($("#mTitulo").value || "").trim();
   if (!titulo) return aviso("Falta dizer o que se marca.", "erro");
-  const quando = $("#mQuando").value;
-  if (!quando) return aviso("Falta a data.", "erro");
-  const iso = new Date(quando).toISOString();
+
+  // UM DOS DOIS, NUNCA OS DOIS — é o que a CHECK da 188 exige, e é o que
+  // distingue as duas caras do mesmo objecto.
+  let comeca = null, prazo = null;
+  if (comHora) {
+    const q = $("#mQuando")?.value;
+    if (!q) return aviso("Falta o dia e a hora.", "erro");
+    comeca = new Date(q).toISOString();
+  } else {
+    prazo = $("#mPrazo")?.value || null;
+    if (!prazo) return aviso("Falta a data até quando.", "erro");
+  }
+
+  const ambito = $("#mAmbito")?.value || "geral";
+  // Um assunto de obra tem de apontar a uma obra: a base recusa-o de outra
+  // maneira, e mais vale dizê-lo aqui do que devolver um erro de restrição.
+  if (ambito === "obra" && !obraId) return aviso("Um assunto de obra tem de dizer qual.", "erro");
 
   $("#mGravar").disabled = true;
   try {
@@ -354,8 +435,13 @@ async function gravarMarcacao() {
       headers: { apikey: c.chave, Authorization: `Bearer ${tok}`,
                  "Content-Type": "application/json", Prefer: "return=minimal" },
       body: JSON.stringify({
-        OwnerID: ownerId, ObraID: obraId, Titulo: titulo,
-        Tipo: $("#mTipo").value, Comeca: iso,
+        OwnerID: ownerId, ObraID: ambito === "obra" ? obraId : (obraId || null), Titulo: titulo,
+        Ambito: ambito,
+        // O `Tipo` da base DERIVA das duas perguntas, em vez de ser uma
+        // terceira: com prazo é uma tarefa; com hora é a espécie escolhida, ou
+        // «outro» quando não se escolheu nenhuma. É o mesmo que o computador faz.
+        Tipo: !comHora ? "tarefa" : (($("#mEspecie")?.value) || "outro"),
+        Comeca: comeca, Prazo: prazo,
         Local: ($("#mLocal").value || "").trim() || null,
       }),
     });
