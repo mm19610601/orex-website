@@ -510,24 +510,27 @@ function pintarAssunto() {
 
     <div class="cartao">
       <div class="eyebrow">Conversa</div>
-      ${!fio.length && !porEnviar.length
-        ? `<div class="vazio" style="padding:12px 0;">Ainda ninguém disse nada.</div>`
-        : fio.map(f => `<div class="linhafio">
-             <div class="quemfio">${esc(f.autor || "?")}${f.de_fora ? " · de fora" : ""}
-               <span>${new Date(f.quando).toLocaleString("pt-PT", { dateStyle:"short", timeStyle:"short" })}</span></div>
-             <div>${esc(f.texto || f.alteracao || "")}</div>
-           </div>`).join("")}
-      ${porEnviar.map(x => `<div class="linhafio porenviar">
-           <div class="quemfio">eu <span>por enviar</span></div>
-           <div>${esc(x.texto || (x.tipo === "feito" ? "(dar por concluído)" : ""))}</div>
-         </div>`).join("")}
-
-      <div class="campo" style="margin-top:12px;">
+      <!-- ESCREVER EM CIMA, e o fio do mais recente para o mais antigo. Quem
+           abre um assunto quer saber o que se passou AGORA — nao recomecar a
+           leitura pelo principio de uma conversa de tres semanas. -->
+      <div class="campo" style="margin-bottom:10px;">
         <textarea id="cTexto" rows="3" placeholder="O que se passa aqui…"></textarea>
       </div>
       <button id="cEnviar">Escrever</button>
       ${a.Estado === "aberto" || !a.Estado
         ? `<button id="cFeito" class="secundario">Concluído</button>` : ""}
+
+      ${porEnviar.slice().reverse().map(x => `<div class="linhafio porenviar">
+           <div class="quemfio">eu <span>por enviar</span></div>
+           <div>${esc(x.texto || (x.tipo === "feito" ? "(dar por concluído)" : ""))}</div>
+         </div>`).join("")}
+      ${!fio.length && !porEnviar.length
+        ? `<div class="vazio" style="padding:12px 0;">Ainda ninguém disse nada.</div>`
+        : fio.slice().reverse().map(f => `<div class="linhafio">
+             <div class="quemfio">${esc(f.autor || "?")}${f.de_fora ? " · de fora" : ""}
+               <span>${new Date(f.quando).toLocaleString("pt-PT", { dateStyle:"short", timeStyle:"short" })}</span></div>
+             <div>${esc(f.texto || f.alteracao || "")}</div>
+           </div>`).join("")}
     </div>
 
     <div class="rodape"><a href="../app/" style="color:var(--steel);">este telemóvel</a> · orexerp.pt</div>`;
