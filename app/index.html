@@ -98,37 +98,55 @@ function pintarIndice(c) {
 
 /* ── Emparelhar ───────────────────────────────────────────────────────────── */
 function pintarEmparelhar() {
+  // CABE NUM ECRA DE TELEMOVEL, e isso e' um requisito, nao um acabamento.
+  //
+  //   Tinha aqui tres cartoes de explicacoes. Cada uma era verdadeira e util —
+  //   e juntas empurravam o que interessa para fora da vista: quem abria isto
+  //   num telefone via texto e tinha de rolar para chegar a alguma coisa que
+  //   se faca. Uma pagina que explica muito bem uma coisa que nao se ve nao
+  //   explica nada.
+  //
+  //   Fica UMA instrucao a` vista — a que resolve o caso de 9 em 10 vezes — e o
+  //   resto dobrado. Quem precisar do resto abre-o; quem nao precisar nunca
+  //   soube que existia.
   $("#ecra").innerHTML = `
     ${barraRecado()}
     <div class="cartao">
       <div class="eyebrow">Primeiro passo</div>
-      <h2 style="font-size:22px;margin-bottom:8px;">Ligar este telemóvel</h2>
-      <p style="font-size:14px;color:var(--ink-2);margin-bottom:4px;">
-        No OREX do computador: <b>Admin → Aparelhos móveis</b>, regista o aparelho e aparece um código.
-        Aponta-lhe a <b>câmara normal</b> deste telefone — a de tirar fotografias. Ele abre esta
-        página já ligada. O código serve <b>uma vez</b> e caduca em 1 hora.
+      <h2 style="font-size:21px;margin-bottom:8px;">Ligar este telemóvel</h2>
+      <p style="font-size:14px;color:var(--ink-2);margin:0;">
+        Aponta a <b>câmara normal</b> deste telefone ao código que aparece no computador,
+        em <b>Admin → Aparelhos móveis</b>. Abre já ligado.
+      </p>
+      <p style="font-size:12px;color:var(--steel);margin:8px 0 0;">
+        O código serve uma vez e caduca em 1 hora.
       </p>
     </div>
-    <div class="cartao">
-      <p style="font-size:12px;color:var(--steel);margin:0 0 10px;">
-        Se preferires, lê-o aqui por dentro — dá o mesmo. No iPhone este botão não funciona;
-        aí é mesmo pela câmara normal.
-      </p>
-      <button id="btLer">Ler o QR aqui dentro</button>
-      <video id="video" playsinline muted hidden style="width:100%;border-radius:10px;background:#000;aspect-ratio:3/4;object-fit:cover;margin-top:12px;"></video>
-      <p style="font-size:12px;color:var(--steel);margin:10px 0 0;" id="dicaLeitor"></p>
-    </div>
-    <div class="cartao">
-      <div class="eyebrow">Em alternativa — quando não se está ao pé do computador</div>
-      <label for="colado">Colar a ligação</label>
-      <p style="font-size:12px;color:var(--steel);margin:0 0 8px;">
-        No computador, ao lado do código, há <b>Copiar a ligação</b>. Manda-a para este telemóvel
-        por mensagem ou email: clicar nela faz o mesmo que ler o código. Se o clique não pegar,
-        cola-a aqui.
-      </p>
-      <textarea id="colado" placeholder='{"v":2,"url":"…"}'></textarea>
-      <button class="secundario" id="btColar" style="margin-top:8px;">Emparelhar com este texto</button>
-    </div>
+
+    <details class="cartao" style="padding-top:12px;">
+      <summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--ink-2);">
+        A câmara não pega, ou não estou ao pé do computador
+      </summary>
+
+      <div style="margin-top:14px;">
+        <button id="btLer">Ler o QR aqui dentro</button>
+        <video id="video" playsinline muted hidden style="width:100%;border-radius:10px;background:#000;aspect-ratio:3/4;object-fit:cover;margin-top:12px;"></video>
+        <p style="font-size:12px;color:var(--steel);margin:8px 0 0;" id="dicaLeitor">
+          No iPhone isto não funciona — aí é mesmo pela câmara normal.
+        </p>
+      </div>
+
+      <div style="margin-top:18px;border-top:1px solid var(--linha,#e5e7eb);padding-top:14px;">
+        <label for="colado">Colar a ligação</label>
+        <p style="font-size:12px;color:var(--steel);margin:0 0 8px;">
+          No computador, ao lado do código: <b>Copiar a ligação</b>. Manda-a para aqui por
+          mensagem — clicar nela faz o mesmo que ler o código.
+        </p>
+        <textarea id="colado" placeholder="https://orexerp.pt/app/#p=…"></textarea>
+        <button class="secundario" id="btColar" style="margin-top:8px;">Emparelhar com este texto</button>
+      </div>
+    </details>
+
     <div class="rodape">orexerp.pt</div>`;
 
   $("#btLer").onclick = abrirLeitor;
