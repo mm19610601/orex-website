@@ -146,9 +146,9 @@ async function abrirLeitor() {
         const [b] = await det.detect(v);
         if (!b) return;
         parar();
-        emparelhar(JSON.parse(b.rawValue));
+        lerCodigo(b.rawValue);
       } catch (e) {
-        if (e instanceof SyntaxError) { parar(); aviso("Esse QR não é um código do OREX.", "erro"); }
+        if (e instanceof SyntaxError) { parar(); aviso(porqueNaoServe(""), "erro"); }
       }
     }, 350);
   } catch {
@@ -156,8 +156,31 @@ async function abrirLeitor() {
   }
 }
 
+// HÁ DOIS CÓDIGOS NO ECRÃ DO COMPUTADOR e é fácil apontar ao errado — o de
+// cima abre esta página, o de baixo liga este telemóvel. Dizer «não é um código
+// do OREX» a quem apontou ao do atalho é verdade e não ajuda: ele apontou a um
+// código do OREX, só que ao outro.
+function porqueNaoServe(texto) {
+  const t = String(texto || "").trim();
+  if (/^https?:\/\/[^\s]*orexerp\.pt/i.test(t))
+    return "Esse é o código do ATALHO — o que abre esta página. O de emparelhamento aparece "
+         + "no computador depois de «Registar e mostrar QR», mais abaixo no mesmo ecrã.";
+  if (/^https?:\/\//i.test(t))
+    return "Esse código leva a um endereço, não é um emparelhamento do OREX.";
+  return "Esse QR não é um código do OREX. O de emparelhamento gera-se no computador, "
+       + "em Administração → Aparelhos móveis.";
+}
+
+// O que a câmara leu pode ser o código certo (JSON) ou o do atalho (um endereço).
+function lerCodigo(bruto) {
+  let carga = null;
+  try { carga = JSON.parse(bruto); } catch { /* não era JSON */ }
+  if (!carga) return aviso(porqueNaoServe(bruto), "erro");
+  return emparelhar(carga);
+}
+
 async function emparelhar(carga) {
-  if (!carga || !carga.url || !carga.chave) return aviso("Esse código não é do OREX.", "erro");
+  if (!carga || !carga.url || !carga.chave) return aviso(porqueNaoServe(""), "erro");
   const url = String(carga.url).replace(/\/$/, "");
   aviso("A confirmar com o OREX…", "nota");
   let c;
