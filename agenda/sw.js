@@ -31,3 +31,39 @@ self.addEventListener("fetch", (e) => {
       .catch(() => caches.match(e.request).then(a => a || caches.match("./index.html")))
   );
 });
+
+// ── AVISOS ─────────────────────────────────────────────────────────────────
+//
+//   O `push` chega com a página fechada — é para isso que existe. O aviso é
+//   desenhado aqui, com o que vier no corpo; se não vier nada (há serviços que
+//   entregam o push sem carga), mostra-se um aviso genérico em vez de nada,
+//   porque um push silencioso faz o browser queixar-se e, em alguns, revogar a
+//   permissão.
+self.addEventListener("push", (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch { d = { titulo: e.data && e.data.text() }; }
+  const titulo = d.titulo || "OREX";
+  e.waitUntil(self.registration.showNotification(titulo, {
+    body: d.corpo || "",
+    icon: "../app/icone-192.png",
+    badge: "../app/icone-192.png",
+    // A etiqueta agrupa: dois avisos do mesmo compromisso substituem-se em vez
+    // de se empilharem no ecrã de bloqueio.
+    tag: d.id ? "orex-" + d.id : undefined,
+    data: { ligacao: d.ligacao || "/agenda/", motivo: d.motivo || null },
+    // Um prazo que já passou não se descarta sem se ver — os outros sim.
+    requireInteraction: d.motivo === "prazo_passado",
+  }));
+});
+
+//   Carregar no aviso leva à agenda. Se ela já estiver aberta nalgum
+//   separador, traz-se esse à frente em vez de abrir mais um — abrir um
+//   segundo separador da mesma coisa é o defeito mais comum destas páginas.
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const destino = (e.notification.data && e.notification.data.ligacao) || "/agenda/";
+  e.waitUntil(clients.matchAll({ type: "window", includeUncontrolled: true }).then((js) => {
+    for (const c of js) if (c.url.includes("/agenda") && "focus" in c) return c.focus();
+    return clients.openWindow(destino);
+  }));
+});

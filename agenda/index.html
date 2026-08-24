@@ -102,6 +102,87 @@ async function carregar() {
   pintar();
 }
 
+// ── AVISOS ─────────────────────────────────────────────────────────────────
+//
+//   Quem decide os avisos é a base (pg_cron, migração 190). Aqui só se trata de
+//   este aparelho dizer «avisem-me» e ficar com um endereço para onde o serviço
+//   de push possa entregar.
+//
+//   NO IPHONE ISTO SÓ FUNCIONA COM A PÁGINA ADICIONADA AO ECRÃ PRINCIPAL —
+//   desde o iOS 16.4, e não antes. Diz-se, em vez de deixar a pessoa carregar
+//   num botão que não faz nada. E é a mesma condição que faz o Safari não
+//   apagar as credenciais ao fim de 7 dias, portanto vale a pena de qualquer
+//   maneira.
+const rpc = async (nome, corpo) => {
+  const c = OREX.cred(), tok = await OREX.autenticar();
+  const r = await fetch(`${c.url}/rest/v1/rpc/${nome}`, {
+    method: "POST",
+    headers: { apikey: c.chave, Authorization: `Bearer ${tok}`, "Content-Type": "application/json" },
+    body: JSON.stringify(corpo || {}),
+  });
+  if (!r.ok) throw new Error(`o servidor respondeu ${r.status}`);
+  return r.json();
+};
+
+const naTela = () => window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+const ehIPhone = () => /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+function estadoAvisos() {
+  if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window))
+    return { pode: false, porque: "Este browser não sabe receber avisos." };
+  if (ehIPhone() && !naTela())
+    return { pode: false, porque: "No iPhone, os avisos só funcionam com esta página adicionada ao ecrã principal (Partilhar → Adicionar ao ecrã principal)." };
+  if (Notification.permission === "denied")
+    return { pode: false, porque: "Os avisos estão bloqueados nas definições do browser para este site." };
+  return { pode: true, ligado: Notification.permission === "granted" };
+}
+
+// A chave pública vem em base64url e o browser quer bytes. Sem esta conversão
+// o `subscribe` rejeita com uma mensagem que não ajuda ninguém.
+function chaveEmBytes(b64) {
+  const p = "=".repeat((4 - (b64.length % 4)) % 4);
+  const b = atob((b64 + p).replace(/-/g, "+").replace(/_/g, "/"));
+  return Uint8Array.from([...b].map((ch) => ch.charCodeAt(0)));
+}
+
+async function ligarAvisos() {
+  const e = estadoAvisos();
+  if (!e.pode) { aviso(e.porque, "erro"); return; }
+  try {
+    if ((await Notification.requestPermission()) !== "granted") {
+      aviso("Sem autorização, não há avisos.", "erro"); return;
+    }
+    const reg = await navigator.serviceWorker.ready;
+    const chave = await rpc("age_vapid_publica");
+    if (!chave) throw new Error("esta base ainda não tem chaves de aviso");
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,                       // o browser exige-o, e é justo
+      applicationServerKey: chaveEmBytes(chave),
+    });
+    const j = sub.toJSON();
+    const r = await rpc("mov_subscrever_avisos", {
+      p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_auth: j.keys.auth,
+      p_aparelho: navigator.userAgent.slice(0, 80), p_plataforma: ehIPhone() ? "iphone" : "android",
+    });
+    if (!r || r.ok !== true) throw new Error((r && r.erro) || "não consegui registar");
+    aviso("Avisos ligados neste aparelho.", "ok");
+  } catch (err) {
+    aviso("Não consegui ligar os avisos: " + err.message, "erro");
+  }
+  pintar();
+}
+
+async function desligarAvisos() {
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    await rpc("mov_desligar_avisos", { p_endpoint: sub ? sub.endpoint : null });
+    if (sub) await sub.unsubscribe();
+    aviso("Este aparelho deixa de receber avisos.", "ok");
+  } catch (err) { aviso("Não consegui desligar: " + err.message, "erro"); }
+  pintar();
+}
+
 function pintar() {
   const c = OREX.cred();
   $("#quem").innerHTML = c ? `${esc(c.utilizador || "")}<br>${esc(c.nome || "")}` : "";
@@ -181,8 +262,20 @@ function pintar() {
     <div class="rodape"><a href="../app/" style="color:var(--steel);">este telemóvel</a> · orexerp.pt</div>`;
 
   $("#barra").hidden = false;
-  $("#barra").innerHTML = `<button id="btNova">${novaAberta ? "✕ Fechar" : "🗓 Marcar"}</button>`;
+  // O botão dos avisos diz sempre o que se passa, mesmo quando não pode fazer
+  // nada: um botão que desaparece sem explicação faz a pessoa concluir que o
+  // programa não tem avisos, e é a conclusão errada.
+  const av = estadoAvisos();
+  const botaoAvisos = av.pode
+    ? `<button id="btAvisos">${av.ligado ? "🔔 Avisos ligados" : "🔕 Receber avisos"}</button>`
+    : `<button id="btPorque" class="fraco" title="${esc(av.porque)}">🔕 Avisos indisponíveis</button>`;
+  $("#barra").innerHTML =
+    `<button id="btNova">${novaAberta ? "✕ Fechar" : "🗓 Marcar"}</button>` + botaoAvisos;
   $("#btNova").onclick = () => { novaAberta = !novaAberta; pintar(); if (novaAberta) $("#mTitulo")?.focus(); };
+  const ba = $("#btAvisos");
+  if (ba) ba.onclick = () => (av.ligado ? desligarAvisos() : ligarAvisos());
+  const bp = $("#btPorque");
+  if (bp) bp.onclick = () => aviso(av.porque, "nota");
   if (novaAberta) {
     $("#mGravar").onclick = gravarMarcacao;
     $("#mFechar").onclick = () => { novaAberta = false; pintar(); };
