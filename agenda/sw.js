@@ -39,31 +39,67 @@ self.addEventListener("fetch", (e) => {
 //   entregam o push sem carga), mostra-se um aviso genérico em vez de nada,
 //   porque um push silencioso faz o browser queixar-se e, em alguns, revogar a
 //   permissão.
+//
+//   O LEMBRETE COM UM TOQUE: quando o aviso traz um telefone, leva um botão
+//   «Ligar». Carregar nele abre a agenda com `?ligar=`, e a página manda o
+//   telemóvel para o marcador com o número já escrito.
+//
+//   Porque é que não se abre `tel:` daqui directamente: o `clients.openWindow`
+//   de um service worker só aceita endereços do mesmo sítio — um `tel:` é
+//   recusado sem dizer porquê. Passar pela página é o que funciona nos dois
+//   sistemas, e de caminho deixa o assunto aberto por trás da chamada.
 self.addEventListener("push", (e) => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch { d = { titulo: e.data && e.data.text() }; }
   const titulo = d.titulo || "OREX";
+  const accoes = [];
+  if (d.telefone) accoes.push({ action: "ligar", title: "📞 Ligar" });
+  accoes.push({ action: "abrir", title: "Abrir" });
+
   e.waitUntil(self.registration.showNotification(titulo, {
     body: d.corpo || "",
     icon: "../app/icone-192.png",
     badge: "../app/icone-192.png",
-    // A etiqueta agrupa: dois avisos do mesmo compromisso substituem-se em vez
-    // de se empilharem no ecrã de bloqueio.
+    // A etiqueta agrupa: dois avisos do mesmo assunto substituem-se em vez de
+    // se empilharem no ecrã de bloqueio.
     tag: d.id ? "orex-" + d.id : undefined,
-    data: { ligacao: d.ligacao || "/agenda/", motivo: d.motivo || null },
+    data: {
+      ligacao: d.ligacao || "/agenda/",
+      motivo: d.motivo || null,
+      telefone: d.telefone || null,
+      id: d.id || null,
+    },
+    actions: accoes.slice(0, 2),        // dois é o que a maioria dos sistemas mostra
     // Um prazo que já passou não se descarta sem se ver — os outros sim.
     requireInteraction: d.motivo === "prazo_passado",
   }));
 });
 
-//   Carregar no aviso leva à agenda. Se ela já estiver aberta nalgum
-//   separador, traz-se esse à frente em vez de abrir mais um — abrir um
-//   segundo separador da mesma coisa é o defeito mais comum destas páginas.
+//   Carregar no aviso leva à agenda. Se ela já estiver aberta nalgum separador,
+//   traz-se esse à frente em vez de abrir mais um — abrir um segundo separador
+//   da mesma coisa é o defeito mais comum destas páginas.
 self.addEventListener("notificationclick", (e) => {
   e.notification.close();
-  const destino = (e.notification.data && e.notification.data.ligacao) || "/agenda/";
+  const d = e.notification.data || {};
+  let destino = d.ligacao || "/agenda/";
+
+  // «Ligar» leva o número; a página trata do marcador. O assunto vai junto para
+  // a chamada poder ficar registada no fio quando ela terminar.
+  if (e.action === "ligar" && d.telefone) {
+    const qs = new URLSearchParams({ ligar: d.telefone });
+    if (d.id) qs.set("assunto", d.id);
+    destino = "/agenda/?" + qs.toString();
+  }
+
   e.waitUntil(clients.matchAll({ type: "window", includeUncontrolled: true }).then((js) => {
-    for (const c of js) if (c.url.includes("/agenda") && "focus" in c) return c.focus();
+    for (const c of js) {
+      if (c.url.includes("/agenda") && "focus" in c) {
+        // Já aberta: manda-se-lhe o recado em vez de a recarregar, senão
+        // perde-se o que a pessoa estivesse a escrever.
+        if (c.navigate && destino.includes("ligar=")) return c.navigate(destino).then((w) => w && w.focus());
+        return c.focus();
+      }
+    }
     return clients.openWindow(destino);
   }));
 });

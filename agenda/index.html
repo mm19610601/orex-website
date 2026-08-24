@@ -183,6 +183,44 @@ async function desligarAvisos() {
   pintar();
 }
 
+// ── O LEMBRETE COM UM TOQUE ────────────────────────────────────────────────
+//
+//   A notificação trouxe um botão «Ligar»; o service worker abriu esta página
+//   com `?ligar=+351…`. O que falta é o gesto: mandar o telemóvel para o
+//   marcador com o número já escrito.
+//
+//   O `tel:` tem de partir DAQUI e não do service worker — o `openWindow` de um
+//   service worker só aceita endereços do mesmo sítio, e recusa um `tel:` sem
+//   dizer porquê.
+//
+//   E limpa-se o endereço a seguir: sem isso, recarregar a página volta a
+//   marcar o número, e uma pessoa que recarregue duas vezes liga duas vezes.
+async function talvezLigar() {
+  const u = new URL(location.href);
+  const numero = u.searchParams.get("ligar");
+  const assunto = u.searchParams.get("assunto");
+  if (!numero) return;
+
+  u.searchParams.delete("ligar");
+  history.replaceState(null, "", u.pathname + (u.search === "?" ? "" : u.search));
+
+  // Fica escrito no fio que se ligou. Não é o registo da chamada — é o registo
+  // de que ela foi iniciada, que é o que este programa pode honestamente saber:
+  // o browser não faz ideia se a chamada foi atendida.
+  if (assunto) {
+    chamadaPendente = { assunto, numero, quando: new Date().toISOString() };
+    try {
+      await rpc("mov_fio_escrever", {
+        p_marcacao: assunto, p_especie: "chamada",
+        p_texto: "Ligou para " + numero,
+        p_idlocal: "cham-" + Date.now(),
+      });
+    } catch { /* sem rede: a chamada faz-se na mesma, o registo espera */ }
+  }
+  location.href = "tel:" + numero.replace(/\s+/g, "");
+}
+let chamadaPendente = null;
+
 function pintar() {
   const c = OREX.cred();
   $("#quem").innerHTML = c ? `${esc(c.utilizador || "")}<br>${esc(c.nome || "")}` : "";
@@ -345,6 +383,6 @@ async function gravarMarcacao() {
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
   OREX.aoMudar((que, d) => { if (que === "revogado") { recado = null; pintar(); aviso(d.porque, "erro"); } });
   pintar();
-  if (OREX.cred()) { OREX.buscarDestinos().catch(() => {}); carregar(); }
+  if (OREX.cred()) { OREX.buscarDestinos().catch(() => {}); carregar(); talvezLigar(); }
 })();
 </script>
