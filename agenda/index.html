@@ -49,6 +49,21 @@
   .duplo button:first-child{border-radius:8px 0 0 8px;border-right:none;}
   .duplo button:last-child{border-radius:0 8px 8px 0;}
   .duplo button.on{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+  /* Uma linha que se abre tem de PARECER que se abre. Sem isto, so' quem ja'
+     soubesse e' que carregava. */
+  .ev.abre{cursor:pointer;}
+  .ev.abre:active{background:#EFEFEA;}
+  .ev.abre .txt b::after{content:" ›";color:var(--steel);font-weight:400;}
+  /* A conversa */
+  .linhafio{padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px;line-height:1.5;}
+  .linhafio:last-of-type{border-bottom:none;}
+  .quemfio{font-size:11px;color:var(--steel);font-weight:700;margin-bottom:2px;
+           display:flex;gap:8px;align-items:baseline;}
+  .quemfio span{font-weight:400;}
+  /* O que ainda nao saiu deste telefone diz que ainda nao saiu: uma intencao
+     nao se confunde com um facto so' porque aparece no mesmo sitio. */
+  .linhafio.porenviar{opacity:.62;}
+  .linhafio.porenviar .quemfio span{color:var(--ink-2);font-style:italic;}
 </style>
 
 <header>
@@ -115,6 +130,16 @@ const paraDia = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISO
 // (começa a uma hora), nunca as duas — é o que a base exige desde a 188.
 let comHora = false;
 let ambitoSel = "geral";
+
+// O ASSUNTO ABERTO. A agenda do computador deixou de ser uma lista de
+// marcacoes e passou a ser um sitio onde se conversa: comenta-se, junta-se
+// gente, da-se por concluido. O telemovel ficou so' com «marcar e ver» — e
+// quem esta' em obra e' precisamente quem tem alguma coisa a dizer sobre o
+// assunto, e nao tem computador a` frente.
+let filaLocal = [];        // o que este telefone ainda nao conseguiu enviar
+let assuntoId = null;      // MarcacaoID aberto
+let assunto = null;        // o que a base devolveu
+let aCarregarAssunto = false;
 
 // Uma data em hora local para o <input datetime-local>, que não aceita ISO com Z.
 const paraCaixa = (d) => new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 16);
@@ -271,6 +296,19 @@ function pintar() {
   $("#quem").innerHTML = c ? `${esc(c.utilizador || "")}<br>${esc(c.nome || "")}` : "";
   if (!c) { $("#barra").hidden = true; return semCredencial(); }
 
+  // Um assunto aberto TOMA O ECRA TODO. Num telemovel nao ha' espaco para
+  // «lista a` esquerda, detalhe a` direita» — e tentar tê-los aos dois deixa os
+  // dois ilegíveis.
+  if (assuntoId) {
+    $("#barra").hidden = false;
+    $("#ecra").innerHTML = (recado ? `<div class="aviso ${recado.tipo}">${esc(recado.txt)}</div>` : "")
+                         + pintarAssunto();
+    const v = $("#aVoltar"); if (v) v.onclick = fecharAssunto;
+    const e = $("#cEnviar"); if (e) e.onclick = comentarAqui;
+    const f = $("#cFeito");  if (f) f.onclick = concluirAqui;
+    return;
+  }
+
   const obras = todasAsObras();
   const agora = Date.now();
   const vis = (linhas || []).filter(l => !filtro || l.fonte === filtro);
@@ -338,7 +376,10 @@ function pintar() {
         ${porDia.get(k).sort((a, b) => new Date(b.quando) - new Date(a.quando)).map(l => {
           const futuro = new Date(l.quando).getTime() > agora;
           const ic = l.fonte === "marcacao" ? (ICONE_TIPO[l.tipo] || "🗓") : (ICONES[l.fonte] || "•");
-          return `<div class="ev ${futuro ? "futuro" : ""}">
+          // So' as marcacoes se abrem: uma fotografia ou um auto nao tem fio.
+          const abre = l.fonte === "marcacao" && l.id;
+          return `<div class="ev ${futuro ? "futuro" : ""}${abre ? " abre" : ""}"
+                       ${abre ? `data-assunto="${esc(l.id)}"` : ""}>
             <div class="hora">${new Date(l.quando).toLocaleTimeString("pt-PT", { hour:"2-digit", minute:"2-digit" })}</div>
             <div class="ic">${ic}</div>
             <div class="txt">
@@ -382,6 +423,8 @@ function pintar() {
     if (a) a.onchange = () => { ambitoSel = a.value; pintar(); };
   }
   document.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { filtro = b.dataset.f; pintar(); });
+  document.querySelectorAll("[data-assunto]").forEach(e =>
+    e.onclick = () => abrirAssunto(e.dataset.assunto));
   const so = $("#obra");
   if (so) so.onchange = () => { obraSel = so.value; carregar(); };
   const bm = $("#btMais");
@@ -398,6 +441,98 @@ function semCredencial() {
 
 // Marcar. Um formulário pequeno, e não três caixas de prompt seguidas: quem
 // está em obra a marcar uma betonagem com uma mão não passa por isso.
+async function abrirAssunto(id) {
+  assuntoId = id; assunto = null; aCarregarAssunto = true; pintar();
+  try {
+    const d = await OREX.rpc("mov_assunto", { p_marcacao: id });
+    if (d && d.erro) throw new Error(d.erro);
+    assunto = d;
+  } catch (e) {
+    aviso(e.message, "erro");
+    assuntoId = null;
+  } finally { aCarregarAssunto = false; pintar(); }
+}
+
+function fecharAssunto() { assuntoId = null; assunto = null; pintar(); }
+
+// Comentar e dar por concluido passam pela FILA, como as fotografias: escreve-se
+// numa cave, sai quando houver rede. O que se escreveu aparece no fio antes de
+// ter saido — com a marca de que ainda esta' por enviar, para nao se confundir
+// uma intencao com um facto.
+async function comentarAqui() {
+  const t = ($("#cTexto")?.value || "").trim();
+  if (!t) return aviso("Escreva alguma coisa.", "erro");
+  await OREX.comentar(assuntoId, t);
+  $("#cTexto").value = "";
+  aviso("Escrito. Sai assim que houver rede.", "ok");
+  pintar();
+}
+
+async function concluirAqui() {
+  if (!confirm("Dar este assunto por concluído?")) return;
+  await OREX.darPorFeito(assuntoId, ($("#cTexto")?.value || "").trim() || null);
+  aviso("Concluído. Sai assim que houver rede.", "ok");
+  fecharAssunto();
+}
+
+const PAPEL = { responsavel: "responsável", criador: "criou", terceiro: "terceiro" };
+
+function pintarAssunto() {
+  if (aCarregarAssunto || !assunto) {
+    return `<div class="cartao"><div class="vazio">a abrir…</div></div>`;
+  }
+  const a = assunto;
+  const quando = a.Comeca
+    ? new Date(a.Comeca).toLocaleString("pt-PT", { dateStyle: "short", timeStyle: "short" })
+    : (a.Prazo ? "até " + new Date(a.Prazo + "T00:00:00").toLocaleDateString("pt-PT") : "");
+  const parts = a.participantes || [];
+  const fio = a.fio || [];
+  // O que ainda esta' na fila deste telefone, para este assunto.
+  const porEnviar = (filaLocal || []).filter(x => x.assunto === assuntoId);
+
+  return `
+    <div class="cartao" style="margin-bottom:12px;">
+      <button id="aVoltar" class="secundario" style="width:auto;padding:5px 12px;font-size:12.5px;margin-bottom:10px;">← Agenda</button>
+      <div class="eyebrow">${esc(a.Ambito || "geral")}${a.ObraNome ? " · " + esc((a.NumObra ? a.NumObra + " " : "") + a.ObraNome) : ""}</div>
+      <h2 style="font-size:19px;margin:4px 0 6px;">${esc(a.Titulo || "(sem título)")}</h2>
+      ${quando ? `<div style="font-size:13px;color:var(--ink-2);">${esc(quando)}</div>` : ""}
+      ${a.Local ? `<div style="font-size:12.5px;color:var(--steel);">${esc(a.Local)}</div>` : ""}
+      ${a.Descricao ? `<p style="font-size:13.5px;color:var(--ink-2);margin:8px 0 0;">${esc(a.Descricao)}</p>` : ""}
+      ${a.Estado && a.Estado !== "aberto" ? `<div style="margin-top:8px;font-size:12px;font-weight:700;">${esc(a.Estado)}</div>` : ""}
+      ${a.ContactoTelefone ? `<a href="tel:${esc(a.ContactoTelefone)}" class="secundario"
+          style="display:block;text-align:center;margin-top:10px;padding:9px;border-radius:8px;
+                 border:1px solid var(--line);text-decoration:none;color:var(--ink);font-weight:600;">
+          📞 Ligar a ${esc(a.ContactoNome || a.ContactoTelefone)}</a>` : ""}
+      ${parts.length ? `<div style="margin-top:10px;font-size:12px;color:var(--steel);">
+          ${parts.map(x => esc(x.nome || "?") + (x.papel ? " (" + esc(PAPEL[x.papel] || x.papel) + ")" : "")
+                            + (x.externo ? " · de fora" : "")).join(" · ")}</div>` : ""}
+    </div>
+
+    <div class="cartao">
+      <div class="eyebrow">Conversa</div>
+      ${!fio.length && !porEnviar.length
+        ? `<div class="vazio" style="padding:12px 0;">Ainda ninguém disse nada.</div>`
+        : fio.map(f => `<div class="linhafio">
+             <div class="quemfio">${esc(f.autor || "?")}${f.de_fora ? " · de fora" : ""}
+               <span>${new Date(f.quando).toLocaleString("pt-PT", { dateStyle:"short", timeStyle:"short" })}</span></div>
+             <div>${esc(f.texto || f.alteracao || "")}</div>
+           </div>`).join("")}
+      ${porEnviar.map(x => `<div class="linhafio porenviar">
+           <div class="quemfio">eu <span>por enviar</span></div>
+           <div>${esc(x.texto || (x.tipo === "feito" ? "(dar por concluído)" : ""))}</div>
+         </div>`).join("")}
+
+      <div class="campo" style="margin-top:12px;">
+        <textarea id="cTexto" rows="3" placeholder="O que se passa aqui…"></textarea>
+      </div>
+      <button id="cEnviar">Escrever</button>
+      ${a.Estado === "aberto" || !a.Estado
+        ? `<button id="cFeito" class="secundario">Concluído</button>` : ""}
+    </div>
+
+    <div class="rodape"><a href="../app/" style="color:var(--steel);">este telemóvel</a> · orexerp.pt</div>`;
+}
+
 async function gravarMarcacao() {
   const obras = todasAsObras();
   const obraId = +($("#mObra")?.value || obraSel || 0) || null;
@@ -463,7 +598,16 @@ async function gravarMarcacao() {
 /* ── Arranque ─────────────────────────────────────────────────────────────── */
 (async function () {
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
-  OREX.aoMudar((que, d) => { if (que === "revogado") { recado = null; pintar(); aviso(d.porque, "erro"); } });
+  OREX.aoMudar(async (que, d) => {
+    if (que === "revogado") { recado = null; pintar(); aviso(d.porque, "erro"); return; }
+    // A fila mudou: o que estava «por enviar» pode ter saido. Reler e redesenhar
+    // — senao um comentario ja' entregue continuava a dizer que estava a` espera.
+    if (que === "fila" || que === "enviado") {
+      filaLocal = (await OREX.fila()).filter(x => x.tipo === "fio" || x.tipo === "feito");
+      if (assuntoId) pintar();
+    }
+  });
+  OREX.fila().then(f => { filaLocal = f.filter(x => x.tipo === "fio" || x.tipo === "feito"); });
   pintar();
   if (OREX.cred()) { OREX.buscarDestinos().catch(() => {}); carregar(); talvezLigar(); }
 })();
