@@ -104,35 +104,46 @@ function pintarEmparelhar() {
       <div class="eyebrow">Primeiro passo</div>
       <h2 style="font-size:22px;margin-bottom:8px;">Ligar este telemóvel</h2>
       <p style="font-size:14px;color:var(--ink-2);margin-bottom:4px;">
-        No OREX do computador: <b>Admin → Aparelhos móveis</b>, regista o aparelho e aparece um QR.
-        Lê-o aqui. O código serve <b>uma vez</b> e caduca em 1 hora.
+        No OREX do computador: <b>Admin → Aparelhos móveis</b>, regista o aparelho e aparece um código.
+        Aponta-lhe a <b>câmara normal</b> deste telefone — a de tirar fotografias. Ele abre esta
+        página já ligada. O código serve <b>uma vez</b> e caduca em 1 hora.
       </p>
     </div>
     <div class="cartao">
-      <button id="btLer">Ler o QR com a câmara</button>
+      <p style="font-size:12px;color:var(--steel);margin:0 0 10px;">
+        Se preferires, lê-o aqui por dentro — dá o mesmo. No iPhone este botão não funciona;
+        aí é mesmo pela câmara normal.
+      </p>
+      <button id="btLer">Ler o QR aqui dentro</button>
       <video id="video" playsinline muted hidden style="width:100%;border-radius:10px;background:#000;aspect-ratio:3/4;object-fit:cover;margin-top:12px;"></video>
       <p style="font-size:12px;color:var(--steel);margin:10px 0 0;" id="dicaLeitor"></p>
     </div>
     <div class="cartao">
-      <div class="eyebrow">Em alternativa</div>
-      <label for="colado">Colar o texto do código</label>
+      <div class="eyebrow">Em alternativa — quando não se está ao pé do computador</div>
+      <label for="colado">Colar a ligação</label>
+      <p style="font-size:12px;color:var(--steel);margin:0 0 8px;">
+        No computador, ao lado do código, há <b>Copiar a ligação</b>. Manda-a para este telemóvel
+        por mensagem ou email: clicar nela faz o mesmo que ler o código. Se o clique não pegar,
+        cola-a aqui.
+      </p>
       <textarea id="colado" placeholder='{"v":2,"url":"…"}'></textarea>
       <button class="secundario" id="btColar" style="margin-top:8px;">Emparelhar com este texto</button>
     </div>
     <div class="rodape">orexerp.pt</div>`;
 
   $("#btLer").onclick = abrirLeitor;
-  $("#btColar").onclick = () => {
-    try { emparelhar(JSON.parse($("#colado").value.trim())); }
-    catch { aviso("Esse texto não é um código de emparelhamento válido.", "erro"); }
-  };
+  $("#btColar").onclick = () => lerCodigo($("#colado").value);
 }
 
 async function abrirLeitor() {
   const dica = $("#dicaLeitor"), v = $("#video"), bt = $("#btLer");
   if (!("BarcodeDetector" in window)) {
-    dica.textContent = "Este telemóvel não sabe ler códigos sozinho (acontece no iPhone). "
-      + "Usa a câmara normal do telefone só para copiar o texto e cola-o em baixo.";
+    // A instrução antiga mandava «usar a câmara normal para copiar o texto» — e
+    // a câmara do iPhone não dá texto de um QR que não seja um endereço. Mandava
+    // a pessoa fazer uma coisa que não é possível.
+    dica.textContent = "Este telemóvel não sabe ler códigos por dentro da página — é o que acontece "
+      + "no iPhone. Não faz falta: fecha isto, abre a CÂMARA normal do telefone e aponta-a ao código. "
+      + "Ele abre esta página já ligada.";
     return;
   }
   try {
@@ -160,22 +171,99 @@ async function abrirLeitor() {
 // cima abre esta página, o de baixo liga este telemóvel. Dizer «não é um código
 // do OREX» a quem apontou ao do atalho é verdade e não ajuda: ele apontou a um
 // código do OREX, só que ao outro.
+// Onde acaba o codigo. Colado de uma mensagem, o que vem a seguir e' texto de
+// gente — «Cumprimentos», uma assinatura — e nada nele avisa que ja nao faz
+// parte: sao letras e numeros como as do bilhete. Por isso nao se procura onde o
+// texto acaba; le-se o objecto ate' ele FECHAR, contando as chaves. As que estao
+// dentro de aspas nao contam, que e' o erro classico deste genero de leitura.
+function objectoNoTexto(t) {
+  const i = t.indexOf("{");
+  if (i < 0) return null;
+  let fundo = 0, emTexto = false, escapado = false;
+  for (let j = i; j < t.length; j++) {
+    const c = t[j];
+    if (emTexto) {
+      if (escapado) escapado = false;
+      else if (c === "\\") escapado = true;
+      else if (c === '"') emTexto = false;
+      continue;
+    }
+    if (c === '"') emTexto = true;
+    else if (c === "{") fundo++;
+    else if (c === "}" && --fundo === 0) return t.slice(i, j + 1);
+  }
+  return null;   // abriu e nunca fechou: veio cortado
+}
+
+// Devolve BYTES, nao texto. A diferenca conta: com uma assinatura agarrada ao
+// fim do bilhete, o lixo decifra-se em bytes que nao sao UTF-8 valido, e a
+// conversao para texto rebentava ANTES de se chegar ao objecto — perdendo um
+// codigo que estava inteiro e certo. Extrai-se primeiro, converte-se depois.
+function deBase64(b) {
+  const x = String(b).replace(/-/g, "+").replace(/_/g, "/");
+  return atob(x + "===".slice((x.length + 3) % 4));
+}
+
+function comoTexto(bytes) {
+  try { return decodeURIComponent(escape(bytes)); } catch { return bytes; }
+}
+
 function porqueNaoServe(texto) {
   const t = String(texto || "").trim();
+  // Esta ordem importa: uma ligação de emparelhamento TAMBÉM é um endereço do
+  // orexerp.pt. Se a pergunta do atalho viesse primeiro, uma ligação cortada
+  // seria diagnosticada como o código errado — e mandava a pessoa procurar
+  // outro código quando o que tinha era o certo, mal copiado.
+  if (/[#&]p=/.test(t.replace(/\s+/g, "")))
+    return "Essa ligação veio cortada — falta-lhe o fim. Copie-a outra vez inteira, "
+         + "ou aponte a câmara normal do telefone ao código no computador.";
   if (/^https?:\/\/[^\s]*orexerp\.pt/i.test(t))
-    return "Esse é o código do ATALHO — o que abre esta página. O de emparelhamento aparece "
-         + "no computador depois de «Registar e mostrar QR», mais abaixo no mesmo ecrã.";
+    return "Esse é o código do ATALHO, que só abre esta página. O de emparelhamento é o que "
+         + "aparece no computador depois de «Registar e mostrar QR» — leva um bilhete depois "
+         + "do «#», e este não tem nenhum.";
   if (/^https?:\/\//i.test(t))
     return "Esse código leva a um endereço, não é um emparelhamento do OREX.";
+  if (t.indexOf("{") >= 0)
+    return "Isso parece um código, mas veio cortado — falta-lhe o princípio ou o fim. "
+         + "Copie-o outra vez inteiro, do «{» até ao «}».";
   return "Esse QR não é um código do OREX. O de emparelhamento gera-se no computador, "
        + "em Administração → Aparelhos móveis.";
 }
 
 // O que a câmara leu pode ser o código certo (JSON) ou o do atalho (um endereço).
+//
+// COLADO À MÃO, chega sempre sujo — e a versão anterior fazia `JSON.parse` ao
+// texto cru e desistia. Vem com quebras de linha da aplicação de mensagens, com
+// aspas curvas se o teclado do telemóvel as trocou, e com texto à volta de quem
+// o reenviou («Boa tarde, segue o código: {…}»). Nada disso é erro de quem cola.
 function lerCodigo(bruto) {
+  let t = String(bruto || "").trim();
+  if (!t) return aviso("Cole aqui o texto do código, ou leia-o com a câmara.", "erro");
+
+  // Colado como LINK, que é a forma que se manda por mensagem. Vem primeiro:
+  // é o caso comum agora que o QR é um endereço.
   let carga = null;
-  try { carga = JSON.parse(bruto); } catch { /* não era JSON */ }
-  if (!carga) return aviso(porqueNaoServe(bruto), "erro");
+
+  // (a) Como LIGAÇÃO — a forma que se manda por mensagem, e a que o QR leva.
+  //     Tira-se o ar todo porque a mensagem parte a ligação em linhas; o que
+  //     vier agarrado ao fim resolve-se a seguir, ao ler o objecto até fechar.
+  const noLink = t.replace(/\s+/g, "").match(/[#&]p=([A-Za-z0-9_-]+)/);
+  if (noLink) {
+    try {
+      const dentro = objectoNoTexto(deBase64(noLink[1]));
+      if (dentro) carga = JSON.parse(comoTexto(dentro));
+    } catch { /* segue-se o resto */ }
+  }
+
+  // (b) Como JSON solto — o desenho antigo, e o que sai de «ver a ligação».
+  if (!carga) {
+    const limpo = t
+      .replace(/[“”„«»]/g, '"')   // aspas curvas do teclado
+      .replace(/[‘’]/g, "'");
+    const dentro = objectoNoTexto(limpo);
+    if (dentro) { try { carga = JSON.parse(dentro.replace(/\s+/g, " ")); } catch { /* nao era */ } }
+  }
+  if (!carga) return aviso(porqueNaoServe(t), "erro");
   return emparelhar(carga);
 }
 
@@ -210,9 +298,42 @@ async function emparelhar(carga) {
   }
 }
 
+/* ── O bilhete que vem no proprio endereco ────────────────────────────────── */
+//
+// O QR de emparelhamento é um endereço desta página com o bilhete depois do
+// `#`. Quem aponta a CÂMARA NORMAL do telefone cai aqui já com ele — não é
+// preciso a página saber ler códigos, o que é o que salva o iPhone, onde o
+// Safari não tem `BarcodeDetector` e nunca leu nada.
+//
+// O que está para lá do `#` nunca chega ao servidor: não entra em registos de
+// acesso nem no histórico de intermediários. Mas fica na barra de endereço e no
+// histórico DESTE telefone — por isso apaga-se assim que se lê, com
+// `replaceState`, que reescreve a entrada em vez de acrescentar outra.
+function bilheteDoEndereco() {
+  const h = location.hash || "";
+  const m = h.match(/[#&]p=([A-Za-z0-9_-]+)/);
+  if (!m) return null;
+  history.replaceState(null, "", location.pathname + location.search);
+  try {
+    const b = m[1].replace(/-/g, "+").replace(/_/g, "/");
+    return JSON.parse(decodeURIComponent(escape(atob(b + "===".slice((b.length + 3) % 4)))));
+  } catch { return null; }
+}
+
 /* ── Arranque ─────────────────────────────────────────────────────────────── */
 OREX.aoMudar((que, d) => { if (que === "revogado") { recado = null; pintar(); aviso(d.porque, "erro"); } });
 pintar();
+
+const doEndereco = bilheteDoEndereco();
+if (doEndereco && !OREX.cred()) {
+  aviso("A ligar este telemóvel…", "nota");
+  emparelhar(doEndereco);
+} else if (doEndereco) {
+  // Já estava ligado. Emparelhar outra vez queimaria o bilhete sem proveito e
+  // deitaria fora a ligação que já funciona.
+  aviso("Este telemóvel já está ligado. O código não foi usado — serve para outro aparelho.", "nota");
+}
+
 if (OREX.cred()) {
   OREX.trocarPassword().catch(() => {});
   OREX.buscarDestinos().then(() => pintar()).catch(() => {});
