@@ -227,7 +227,45 @@ async function detalheErro(r, oQue) {
   return `Falhou o envio d${oQue === "a fotografia" ? "a fotografia" : "o registo"} (${r.status})${t ? ": " + t : ""}`;
 }
 
+// Uma chamada a uma função do Supabase, com a sessão deste aparelho.
+async function rpc(nome, corpo) {
+  const c = cred(), tok = await autenticar();
+  const r = await fetch(`${c.url}/rest/v1/rpc/${nome}`, {
+    method: "POST",
+    headers: { apikey: c.chave, Authorization: `Bearer ${tok}`, "Content-Type": "application/json" },
+    body: JSON.stringify(corpo || {}),
+  });
+  if (!r.ok) throw new Error(await detalheErro(r, nome));
+  return r.json();
+}
+
 async function enviarUm(it) {
+  // ── O QUE SE ESCREVE NUM ASSUNTO ────────────────────────────────────────
+  //
+  //   Um comentário escrito em obra sem rede vive nesta fila como uma
+  //   fotografia vive. Vai com a HORA A QUE FOI ESCRITO (`tiradaEm`), e não com
+  //   a hora a que chega: escrito às 9h numa cave e enviado às 14h, pertence às
+  //   9h — senão aparece depois de respostas que lhe são posteriores.
+  //
+  //   E vai com o `idLocal`, que é a chave desta fila. Se a rede cair depois de
+  //   o servidor ter gravado mas antes de responder, a próxima tentativa manda
+  //   o mesmo `idLocal` e o servidor devolve o que já tinha — o comentário não
+  //   entra duas vezes.
+  if (it.tipo === "fio" || it.tipo === "feito") {
+    if (it.tipo === "feito") {
+      const r = await rpc("mov_assunto_feito", { p_marcacao: it.assunto, p_nota: it.texto || null });
+      if (r && r.ok === false) throw new Error(r.erro || "não consegui fechar o assunto");
+      return;
+    }
+    const r = await rpc("mov_fio_escrever", {
+      p_marcacao: it.assunto, p_texto: it.texto,
+      p_especie: it.especie || "comentario",
+      p_quando: it.tiradaEm, p_idlocal: it.idLocal,
+    });
+    if (r && r.ok === false) throw new Error(r.erro || "não consegui escrever no assunto");
+    return;
+  }
+
   const c = cred();
   let tok = await autenticar();
   // Uma posição é só a linha — não há imagem para subir.
@@ -388,6 +426,25 @@ return {
   guardarUltimoAlvo: (v) => grav(G.ultimo, v),
   // A fila
   fila: filaPor, filaGrav, filaTira, escoarFila,
+  // Escrever num assunto sem rede: entra na fila e sai quando houver. Devolve
+  // logo o item, para a página o poder mostrar no fio antes de ele ter saído —
+  // que é o que faz a app parecer que responde mesmo dentro de uma cave.
+  async comentar(assunto, texto, especie) {
+    const it = { idLocal: uuid(), tipo: "fio", assunto, texto,
+                 especie: especie || "comentario",
+                 tiradaEm: new Date().toISOString(), estado: "por enviar" };
+    await filaGrav(it); avisar("fila");
+    escoarFila().catch(() => {});
+    return it;
+  },
+  async darPorFeito(assunto, nota) {
+    const it = { idLocal: uuid(), tipo: "feito", assunto, texto: nota || null,
+                 tiradaEm: new Date().toISOString(), estado: "por enviar" };
+    await filaGrav(it); avisar("fila");
+    escoarFila().catch(() => {});
+    return it;
+  },
+  rpc,
   limparFila: () => trans("readwrite", (s) => s.clear()),
   // Ferramentas
   uuid, encolher, ondeEstou, afinarPosicao,

@@ -207,19 +207,15 @@ async function talvezLigar() {
   // Fica escrito no fio que se ligou. Não é o registo da chamada — é o registo
   // de que ela foi iniciada, que é o que este programa pode honestamente saber:
   // o browser não faz ideia se a chamada foi atendida.
+  //   PELA FILA, e não por uma chamada directa. Quem liga a partir de um aviso
+  //   está muitas vezes numa obra sem rede — e é aí que o registo se perderia,
+  //   que é justamente quando ele faz mais falta. Na fila, sai quando houver.
   if (assunto) {
-    chamadaPendente = { assunto, numero, quando: new Date().toISOString() };
-    try {
-      await rpc("mov_fio_escrever", {
-        p_marcacao: assunto, p_especie: "chamada",
-        p_texto: "Ligou para " + numero,
-        p_idlocal: "cham-" + Date.now(),
-      });
-    } catch { /* sem rede: a chamada faz-se na mesma, o registo espera */ }
+    try { await OREX.comentar(assunto, "Ligou para " + numero, "chamada"); }
+    catch { /* nem a fila deu: a chamada faz-se na mesma */ }
   }
   location.href = "tel:" + numero.replace(/\s+/g, "");
 }
-let chamadaPendente = null;
 
 function pintar() {
   const c = OREX.cred();
