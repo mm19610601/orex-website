@@ -136,6 +136,14 @@
   .band .ledger b{color:var(--ink);}
 
   .ai-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);}
+  .quando{border:1px solid var(--line);border-top:none;background:var(--paper-2);padding:26px 28px;}
+  .quando .lbl{font-family:"JetBrains Mono",monospace;font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--steel);margin-bottom:16px;}
+  .quando .lin{display:grid;grid-template-columns:170px 1fr;gap:18px;padding:11px 0;border-top:1px solid var(--line-2);align-items:baseline;}
+  .quando .lin:first-of-type{border-top:none;}
+  .quando .q{font-family:"JetBrains Mono",monospace;font-size:0.76rem;color:var(--ink);}
+  .quando .o{color:var(--ink-2);font-size:0.92rem;}
+  .quando .rodape{font-family:"JetBrains Mono",monospace;font-size:0.72rem;color:var(--steel);margin-top:18px;line-height:1.6;}
+  @media(max-width:640px){.quando .lin{grid-template-columns:1fr;gap:4px;}}
   .ai-card{background:var(--paper-2);padding:32px 28px;}
   .ai-card .code{font-family:"JetBrains Mono",monospace;font-size:0.7rem;letter-spacing:0.14em;color:var(--steel);margin-bottom:13px;}
   .ai-card h3{margin-bottom:10px;} .ai-card p{color:var(--ink-2);font-size:0.93rem;margin:0 0 24px;}
@@ -148,10 +156,11 @@
   .slider .ticks{display:flex;justify-content:space-between;font-family:"JetBrains Mono",monospace;font-size:0.66rem;color:var(--steel);}
   .slider .ticks span.on{color:var(--ink);}
   .cost{display:flex;align-items:baseline;gap:10px;}
-  .cost .big{font-family:"Archivo Expanded","Archivo",sans-serif;font-weight:900;font-size:2rem;}
+  .cost .big{font-family:"Archivo Expanded","Archivo",sans-serif;font-weight:900;font-size:2rem;white-space:nowrap;}
   .cost .lbl{font-family:"JetBrains Mono",monospace;font-size:0.7rem;color:var(--steel);}
   .cost-bar{height:9px;border:1px solid var(--ink);margin-top:15px;position:relative;}
   .cost-bar::after{content:"";position:absolute;left:0;top:0;bottom:0;width:42%;background:var(--ink);}
+  .cost-bar.p91::after{width:91%;}
 
   .target{display:grid;grid-template-columns:0.92fr 1.08fr;gap:50px;align-items:center;}
   .target .band-num{font-family:"Archivo Expanded","Archivo",sans-serif;font-weight:900;font-size:clamp(2.4rem,4.4vw,3.8rem);line-height:1.0;}
@@ -448,7 +457,7 @@
     <div class="tab reveal"><div class="l"><span class="sheet-no exp">00</span><span class="ttl">Porquê o OREX</span></div><div class="r">A ideia</div></div>
     <div class="values reveal">
       <div class="value"><div class="vn">01</div><h3>Ferramentas de grande</h3><p>Orçamentação, BIM, obra e financeiro — o que as grandes construtoras têm, sem a estrutura delas.</p></div>
-      <div class="value"><div class="vn">02</div><h3>IA a trabalhar por ti</h3><p>Sugere, calcula e prepara documentos. Tu decides quanto a deixas decidir e quanto gastas.</p></div>
+      <div class="value"><div class="vn">02</div><h3>IA a trabalhar por ti</h3><p>Lê, sugere, calcula e prepara documentos. A regra decide primeiro; a IA fica com o que sobra — e o custo diz-se antes de correr.</p></div>
       <div class="value"><div class="vn">03</div><h3>Mais produção</h3><p>O que demorava dias resolve-se no mesmo sítio, com tudo ligado de ponta a ponta.</p></div>
     </div>
   </div>
@@ -531,6 +540,28 @@
         </div>
       </div>
 
+      <div class="band reveal" id="estudo">
+        <div>
+          <div class="code">CONCURSO &rarr; ESTUDO</div>
+          <h3>Do anúncio ao estudo em desenvolvimento, num clique.</h3>
+          <p>Encontras o concurso no portal e carregas em <strong>trazer as peças</strong>. A aplicação descarrega o processo, confere se veio inteiro e <strong>abre o estudo já ligado ao concurso</strong>, com as peças lá dentro — como remessa selada, do mesmo modo que a entrega de um projectista.</p>
+          <p>Depois <strong>lê e arruma</strong>: cada peça é reconhecida e vai para o sítio dela — caderno de encargos, mapa de quantidades, peças desenhadas, fotografias. A especialidade e a fase saem do próprio nome do ficheiro. Ninguém arrasta pastas.</p>
+          <p>O <strong>mapa de quantidades de trabalho</strong> entra inteiro — trabalhos, capítulos e as linhas de texto que os separam. Apontas as colunas uma vez, e o mapeamento fica guardado para o mapa seguinte do mesmo projectista. <strong>O código do concurso não se altera</strong>: respondes artigo a artigo pelo número que a entidade escreveu, e um código teu só existe com a razão escrita ao lado.</p>
+          <p>E o que o mapa traz por baixo dos números não se perde. As notas e os títulos com âmbito viram <strong>requisitos do concurso</strong> — obrigações de execução e critérios de medição, ligados aos artigos a que se aplicam, em fila para quem confirma. As <strong>divergências</strong> entre o contratual e o medido aparecem com a diferença e a percentagem, na precisão que o próprio mapa declarou. E a lista das <strong>peças que constituem a proposta</strong> monta-se a partir do que o concurso pede.</p>
+          <p class="note">Medido em concursos reais. O mesmo concurso trazido pelas duas portas — pelo portal e pela via tradicional — deu 451 ficheiros iguais bit a bit, nenhum corrompido, e 68 que nunca estiveram na plataforma. Quando falta alguma coisa, o que se diz é que falta.</p>
+        </div>
+        <div class="diag">
+          <div class="ledger">
+            <div><span>Peças reconhecidas por regra</span><b>1 272</b></div>
+            <div><span>… e as que foram à IA</span><b>112</b></div>
+            <div><span>Linhas de mapa importadas</span><b>2 860</b></div>
+            <div><span>Requisitos propostos</span><b>514</b></div>
+            <div><span>Divergências contratual <i>vs</i> medido</span><b>&#10003;</b></div>
+            <div><span>Peças da proposta</span><b>&#10003;</b></div>
+          </div>
+        </div>
+      </div>
+
       <div class="band reveal" id="documentos">
         <div>
           <div class="code">DOCUMENTOS / DOSSIER</div>
@@ -568,29 +599,38 @@
   <div class="wrap">
     <div class="tab reveal"><div class="l"><span class="sheet-no exp">02</span><span class="ttl">IA à tua medida</span></div><div class="r">Configurável</div></div>
     <div class="sec-head reveal">
-      <h2>Muita IA — sempre sob o teu controlo.</h2>
-      <p>Escolhes o modelo, o quanto ele decide e quanto queres gastar.</p>
+      <h2>IA onde ela vale a pena — e a regra primeiro.</h2>
+      <p>A conta que interessa não é quanta IA se usa. É quanto trabalho se faz sem ter de a chamar — e saber o preço antes de carregar no botão.</p>
     </div>
     <div class="ai-grid reveal">
       <div class="ai-card">
         <div class="code">MODELO</div>
-        <h3>O modelo que quiseres</h3>
-        <p>Já integra o Claude e tens gestão de chaves para ligar outros modelos.</p>
-        <div class="chips"><span class="chip on">Claude</span><span class="chip">GPT</span><span class="chip">Gemini</span><span class="chip">Llama</span><span class="chip">local</span><span class="chip">…</span></div>
+        <h3>O modelo é escolha da empresa</h3>
+        <p>Três fornecedores ligados, e cada empresa escolhe o seu e põe a sua chave. A chave é da empresa; o custo fica a quem pediu.</p>
+        <div class="chips"><span class="chip on">Claude</span><span class="chip on">GPT</span><span class="chip on">Gemini</span></div>
       </div>
       <div class="ai-card">
-        <div class="code">INTENSIDADE</div>
-        <h3>O quanto decide</h3>
-        <p>De simples sugestões a execução automática — ajustas por tarefa.</p>
-        <div class="slider"><div class="track"><span class="fill"></span><span class="knob"></span></div><div class="ticks"><span>Sugerir</span><span class="on">Assistir</span><span>Automático</span></div></div>
+        <div class="code">A REGRA PRIMEIRO</div>
+        <h3>À IA vai o que sobra</h3>
+        <p>Reconhecer as peças de um concurso: <strong>1&nbsp;272 decisões saíram de regras</strong>, sem uma chamada e sem custo nenhum. Só <strong>112</strong> foram à IA — e vão em texto extraído, não em PDF inteiro.</p>
+        <div class="cost"><span class="big">91%</span><span class="lbl">decidido sem chamar a IA</span></div>
+        <div class="cost-bar p91"></div>
       </div>
       <div class="ai-card">
         <div class="code">CUSTO</div>
-        <h3>Sem surpresas</h3>
-        <p>Defines limites e vês o custo de cada tarefa antes de a correr.</p>
-        <div class="cost"><span class="big">42&euro;</span><span class="lbl">de 100&euro; / mês · exemplo</span></div>
-        <div class="cost-bar"></div>
+        <h3>O preço diz-se antes</h3>
+        <p>Antes de correr, a aplicação diz quantas operações vão à IA e quanto custam <strong>no pior caso</strong> — e dá sempre dois botões: com IA, ou só pela regra, que não custa nada. Depois, o custo aparece em mais três sítios.</p>
+        <div class="cost"><span class="big">24,76&nbsp;$</span><span class="lbl">382 chamadas · três meses de uso real</span></div>
       </div>
+    </div>
+
+    <div class="quando reveal">
+      <div class="lbl">Onde é que o custo de cada operação aparece</div>
+      <div class="lin"><span class="q">Antes de correr</span><span class="o">Quantas operações vão à IA e quanto custam <b>no pior caso</b>, às tarifas do fornecedor que a empresa escolheu. Com o botão de correr <b>só pela regra</b> ao lado, e um tecto por corrida.</span></div>
+      <div class="lin"><span class="q">Em cada chamada</span><span class="o">Fica registada a operação, o modelo, os tokens à entrada e à saída, o custo estimado, quem pediu e a que processo pertence. <b>As tentativas falhadas que o fornecedor cobrou contam na conta</b> — tirá-las era maquilhá-la.</span></div>
+      <div class="lin"><span class="q">Por processo</span><span class="o">Uma <b>declaração pronta a imprimir</b>, com as operações por tipo, os modelos usados e o custo total — e sai igual na proposta, no dossier e em qualquer sítio que a peça.</span></div>
+      <div class="lin"><span class="q">Por empresa</span><span class="o">O acumulado, o do mês, a plataforma activa e o último uso. Quando faltam créditos ao fornecedor, o cartão diz que faltam e leva ao sítio de recarregar.</span></div>
+      <div class="rodape">Custo estimado às tarifas publicadas do fornecedor, apurado no momento de cada chamada. Não é fatura.</div>
     </div>
   </div>
 </section>
@@ -632,12 +672,12 @@
       <div>
         <div class="now">
           <div class="rel">Versão distribuída</div>
-          <div class="big" id="verBig">1.143<span class="u"> .0</span></div>
+          <div class="big" id="verBig">1.157<span class="u"> .0</span></div>
           <div class="sub">a correr em obra, hoje</div>
           <div class="split">
             <div><div class="k">Arranque</div><div class="n">6 jun</div></div>
-            <div><div class="k">Semanas</div><div class="n">11</div></div>
-            <div><div class="k">Versões</div><div class="n">140+</div></div>
+            <div><div class="k">Semanas</div><div class="n">12</div></div>
+            <div><div class="k">Versões</div><div class="n">155+</div></div>
             <div><div class="k">Plataformas</div><div class="n">3</div></div>
           </div>
         </div>
@@ -650,17 +690,25 @@
             <span class="chip">Curva-S</span><span class="chip">Estaleiro</span><span class="chip">KPIs & Carteira</span>
             <span class="chip">QTO</span><span class="chip">COBie</span><span class="chip">IDS</span>
             <span class="chip">Sustentabilidade</span><span class="chip">RTLS</span><span class="chip">Gestão documental</span>
-            <span class="chip">Multi-empresa</span><span class="chip">Agentes de IA</span><span class="chip">App de obra (telemóvel)</span>
+            <span class="chip">Multi-empresa</span><span class="chip">Pedido rápido com IA</span><span class="chip">App de obra (telemóvel)</span>
             <span class="chip">Dossier da obra</span><span class="chip">Correspondência</span><span class="chip">Submissões ao Dono de Obra</span>
             <span class="chip">Concursos públicos (BASE)</span><span class="chip">Remessas de projecto</span><span class="chip">ISO 19650</span>
             <span class="chip">Autos por email</span><span class="chip">Agenda</span>
+            <span class="chip">Leitura das peças</span><span class="chip">Mapeamento de mapas</span><span class="chip">Requisitos do concurso</span>
+            <span class="chip">Divergências de medição</span><span class="chip">Medições por artigo</span><span class="chip">Peças da proposta</span>
           </div>
         </div>
       </div>
 
       <div>
         <div class="vlog">
-          <div class="row cur"><span class="v">1.143</span><span class="d">Concursos públicos do Portal BASE — anúncios abertos e contratos adjudicados</span><span class="dt">ago · agora</span></div>
+          <div class="row cur"><span class="v">1.157</span><span class="d">A leitura das peças propõe o papel de cada uma — e o papel arruma o dossier</span><span class="dt">ago · agora</span></div>
+          <div class="row"><span class="v">1.156</span><span class="d">O código do concurso fica escrito, e um código nosso tem de se justificar</span><span class="dt">27 ago</span></div>
+          <div class="row"><span class="v">1.154</span><span class="d">Leitura das peças — o aviso com o custo, antes de a corrida começar</span><span class="dt">26 ago</span></div>
+          <div class="row"><span class="v">1.150</span><span class="d">O mapa de quantidades entra inteiro: as notas viram requisitos e as divergências ganham percentagem</span><span class="dt">26 ago</span></div>
+          <div class="row"><span class="v">1.149</span><span class="d">Trazer um concurso do Portal BASE para dentro de um estudo, com as peças</span><span class="dt">25 ago</span></div>
+          <div class="row"><span class="v">1.145</span><span class="d">Agenda — o assunto com gente dentro, o fio e o âmbito pessoal</span><span class="dt">24 ago</span></div>
+          <div class="row"><span class="v">1.143</span><span class="d">Concursos públicos do Portal BASE — anúncios abertos e contratos adjudicados</span><span class="dt">24 ago</span></div>
           <div class="row"><span class="v">1.142</span><span class="d">A remessa arruma-se sozinha — os projectos saem da especialidade e da fase</span><span class="dt">23 ago</span></div>
           <div class="row"><span class="v">1.135</span><span class="d">O auto do subempreiteiro chega e volta por email</span><span class="dt">14 ago</span></div>
           <div class="row"><span class="v">1.127</span><span class="d">O modelo BIM passa a ser uma emissão na camada documental</span><span class="dt">13 ago</span></div>
@@ -715,7 +763,7 @@
           </div>
           <button type="submit" class="btn btn-primary">Pedir acesso ao OREX <span class="arrow">&rarr;</span></button>
           <div class="form-msg" id="formMsg" role="status" aria-live="polite"></div>
-          <p class="fineprint"><span id="verFine">OREX v1.143 · Windows 64-bit · ~93 MB</span> · Linux e macOS a caminho.<br /><strong>Validamos cada pedido</strong> e enviamos o link de descarga por email — assim controlamos quem testa o OREX.</p>
+          <p class="fineprint"><span id="verFine">OREX v1.157 · Windows 64-bit · ~93 MB</span> · Linux e macOS a caminho.<br /><strong>Validamos cada pedido</strong> e enviamos o link de descarga por email — assim controlamos quem testa o OREX.</p>
         </form>
       </div>
     </div>
@@ -726,7 +774,7 @@
   <div class="wrap">
     <div class="titleblock">
       <div class="cell brandcell"><img class="logo" src="data:image/png;base64,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" alt="OREX" /><div class="k">Next-Gen Construction</div><div class="v mono">Portugal · 2026</div></div>
-      <div class="cell"><div class="k">Estado</div><div class="v" id="verFoot">Beta · v1.143</div></div>
+      <div class="cell"><div class="k">Estado</div><div class="v" id="verFoot">Beta · v1.157</div></div>
       <div class="cell"><div class="k">Escala</div><div class="v">1:1</div></div>
       <div class="cell"><div class="k">Folha</div><div class="v">01 / 05</div></div>
       <div class="cell"><div class="k">Contacto</div><div class="v mono">beta@orexerp.pt</div></div>
