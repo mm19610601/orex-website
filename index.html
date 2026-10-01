@@ -268,32 +268,38 @@
     .titleblock{grid-template-columns:1fr;} .titleblock .cell{border-right:none;}
   }
 
-  /* -- 00 - O problema ------------------------------------------------- */
-  .percurso{list-style:none;margin:26px 0 0;padding:0;border-left:1px solid var(--line);}
-  .percurso li{display:flex;gap:16px;align-items:flex-start;padding:11px 0 11px 22px;position:relative;}
-  .percurso li::before{content:"";position:absolute;left:-4px;top:21px;width:7px;height:7px;
-    border-radius:50%;background:var(--paper);border:1px solid var(--steel);}
-  .percurso .n{font-family:"JetBrains Mono",monospace;font-size:.72rem;letter-spacing:.14em;
-    color:var(--steel);padding-top:3px;flex:0 0 auto;}
-  .percurso p{margin:0;font-size:1.02rem;line-height:1.55;color:var(--ink-2);max-width:62ch;}
+  /* -- 00 - O problema: uma folha, um ecra ----------------------------- */
+  #problema{padding:16px 0 20px;}
+  .folha-00{display:flex;flex-direction:column;gap:11px;}
+  .p-tit{margin:2px 0 0;font-size:clamp(1.45rem,3vw,2.05rem);line-height:1.06;letter-spacing:-.02em;max-width:20ch;}
+  .percurso{list-style:none;margin:0;padding:0;display:grid;gap:13px;
+    grid-template-columns:repeat(5,1fr);border-top:1px solid var(--line);padding-top:11px;}
+  .percurso li{display:block;position:relative;}
+  .percurso .n{display:block;font-family:"JetBrains Mono",monospace;font-size:.68rem;
+    letter-spacing:.18em;color:var(--steel);margin-bottom:5px;}
+  .percurso p{margin:0;font-size:.88rem;line-height:1.45;color:var(--ink-2);}
   .percurso p b{color:var(--ink);}
-  .percurso-fecho{margin:18px 0 0;font-size:1.06rem;line-height:1.5;color:var(--ink);max-width:56ch;
-    padding-left:22px;border-left:3px solid var(--ink);}
-  .prova{margin-top:34px;border:1px solid var(--line);border-radius:10px;padding:20px 22px;
-    background:var(--paper-2);}
-  .prova-cab{font-family:"JetBrains Mono",monospace;font-size:.7rem;letter-spacing:.2em;
+  .p-fundo{display:grid;grid-template-columns:minmax(260px,.9fr) 1.4fr;gap:14px;align-items:stretch;}
+  .prova{border:1px solid var(--line);border-radius:10px;padding:12px 15px;background:var(--paper-2);}
+  .prova-cab{font-family:"JetBrains Mono",monospace;font-size:.64rem;letter-spacing:.18em;
     text-transform:uppercase;color:var(--steel);}
-  .prova-nums{display:flex;gap:34px;flex-wrap:wrap;margin:14px 0 10px;}
-  .prova-nums b{display:block;font-size:clamp(1.7rem,3.4vw,2.3rem);line-height:1.05;letter-spacing:-.02em;}
-  .prova-nums span{display:block;font-size:.86rem;color:var(--ink-2);margin-top:3px;max-width:22ch;}
-  .prova p{margin:0;font-size:.95rem;color:var(--ink-2);}
-  .resposta{margin-top:34px;background:var(--ink);color:var(--paper);border-radius:12px;padding:26px 26px 24px;}
-  .resposta h3{margin:0 0 10px;font-size:clamp(1.18rem,2.4vw,1.5rem);line-height:1.25;}
-  .resposta p{margin:0 0 18px;font-size:1.02rem;line-height:1.6;opacity:.86;max-width:66ch;}
+  .prova-nums{display:flex;flex-direction:column;gap:7px;margin-top:8px;}
+  .prova-nums b{display:block;font-size:1.35rem;line-height:1;letter-spacing:-.02em;}
+  .prova-nums span{display:block;font-size:.8rem;color:var(--ink-2);margin-top:2px;}
+  .resposta{background:var(--ink);color:var(--paper);border-radius:10px;padding:16px 18px;
+    display:flex;flex-direction:column;justify-content:center;}
+  .resposta h3{margin:0 0 7px;font-size:clamp(1.05rem,2vw,1.3rem);line-height:1.22;}
+  .resposta p{margin:0 0 12px;font-size:.93rem;line-height:1.45;opacity:.86;max-width:62ch;}
   .resposta p b{opacity:1;}
+  .resposta .hero-cta{margin:0;}
   .resposta .btn-primary{background:var(--paper);color:var(--ink);}
   .resposta .btn-ghost{color:var(--paper);border-color:rgba(255,255,255,.4);}
-  @media (max-width:560px){ .prova-nums{gap:20px;} }
+  @media (max-width:900px){
+    .percurso{grid-template-columns:repeat(2,1fr);}
+    .p-fundo{grid-template-columns:1fr;}
+    .prova-nums{flex-direction:row;gap:22px;flex-wrap:wrap;}
+  }
+  @media (max-width:560px){ .percurso{grid-template-columns:1fr;gap:10px;} }
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}.reveal{opacity:1;transform:none;}.draw{stroke-dashoffset:0;}}
 </style>
 </head>
@@ -453,66 +459,43 @@
      Os números da prova são medidos num dossier real, não são figura de estilo.
      ══════════════════════════════════════════════════════════════════════ -->
 <section id="problema">
-  <div class="wrap">
+  <div class="wrap folha-00">
     <div class="tab reveal"><div class="l"><span class="sheet-no exp">00</span><span class="ttl">O problema</span></div><div class="r">Porque é que isto existe</div></div>
 
-    <div class="sec-head reveal">
-      <h2>A mesma informação, escrita quatro vezes.</h2>
-      <p class="lead">Uma empresa pequena concorre às mesmas obras que as grandes, com os mesmos
-      documentos e os mesmos prazos. O que lhe falta não é capacidade — é deixar de refazer o
-      mesmo trabalho em cada etapa.</p>
-    </div>
+    <h2 class="p-tit reveal">A mesma informação, escrita quatro vezes.</h2>
 
+    <!-- O PERCURSO DEITADO. Em pe eram cinco linhas e meia folha; deitado sao
+         cinco colunas e quatro centimetros. O texto e o mesmo. -->
     <ol class="percurso reveal">
-      <li><span class="n">01</span><p><b>O concurso chega</b> numa pasta com centenas de ficheiros,
-        com nomes que ninguém combinou.</p></li>
-      <li><span class="n">02</span><p><b>O mapa de quantidades é escrito outra vez</b>, num Excel —
-        porque o do concurso não serve para orçamentar.</p></li>
-      <li><span class="n">03</span><p><b>Os preços vivem noutro sítio</b>: as consultas no email, as
-        respostas em PDF, as composições na folha de alguém.</p></li>
-      <li><span class="n">04</span><p><b>Ganha-se a obra — e escreve-se tudo de novo</b>, agora para
-        quem a vai executar.</p></li>
-      <li><span class="n">05</span><p><b>No fim do mês a pergunta é sempre a mesma:</b> onde é que o
-        dinheiro se foi?</p></li>
+      <li><span class="n">01</span><p>O concurso chega numa pasta com <b>centenas de ficheiros</b>, com nomes que ninguém combinou.</p></li>
+      <li><span class="n">02</span><p>O mapa de quantidades <b>escreve-se outra vez</b>, num Excel.</p></li>
+      <li><span class="n">03</span><p>Os preços vivem <b>noutro sítio</b>: no email, em PDF, na folha de alguém.</p></li>
+      <li><span class="n">04</span><p>Ganha-se a obra — e <b>escreve-se tudo de novo</b>.</p></li>
+      <li><span class="n">05</span><p>No fim do mês: <b>onde é que o dinheiro se foi?</b></p></li>
     </ol>
 
-    <p class="percurso-fecho reveal">Não é falta de método. É o método estar repartido por sete
-    ficheiros que não falam uns com os outros.</p>
-
-    <div class="values reveal">
-      <div class="value"><div class="vn">01</div><h3>Escreve-se quatro vezes</h3>
-        <p>Cada vez que a informação muda de ficheiro muda de mão — e cada passagem é um erro
-        possível que ninguém volta a conferir.</p></div>
-      <div class="value"><div class="vn">02</div><h3>As decisões perdem-se</h3>
-        <p>Porque é que este artigo leva 12% e não 8? A resposta ficou na cabeça de quem decidiu.
-        A folha só guardou o número.</p></div>
-      <div class="value"><div class="vn">03</div><h3>Só se sabe no fim</h3>
-        <p>A margem real aparece quando a obra acaba. Nessa altura já não há nada a fazer com ela.</p></div>
-    </div>
-
     <!-- A PROVA. Numeros medidos a 01-10-2026 num dossier de concurso que o
-         programa leu: 1 095 documentos, 977 sem titulo util no nome (89%), e
-         143 com o mesmo conteudo entregue em duas pastas. Nao e exemplo
-         inventado, e por isso e que esta aqui. -->
-    <div class="prova reveal">
-      <div class="prova-cab">Medido num dossier de concurso real</div>
-      <div class="prova-nums">
-        <div><b>1 095</b><span>ficheiros numa entrega</span></div>
-        <div><b>89%</b><span>sem dizer no nome o que eram</span></div>
-        <div><b>143</b><span>entregues duas vezes</span></div>
+         programa leu: 1 095 documentos, 977 sem titulo util no nome (89%) e 143
+         com o mesmo conteudo entregue em duas pastas. Nao e exemplo inventado,
+         e e' por isso que esta' aqui. -->
+    <div class="p-fundo reveal">
+      <div class="prova">
+        <div class="prova-cab">Medido num dossier de concurso real</div>
+        <div class="prova-nums">
+          <div><b>1 095</b><span>ficheiros numa entrega</span></div>
+          <div><b>89%</b><span>sem dizer no nome o que eram</span></div>
+          <div><b>143</b><span>entregues duas vezes</span></div>
+        </div>
       </div>
-      <p>E alguém tem de arrumar isto à mão antes de se poder orçamentar.</p>
-    </div>
-
-    <div class="resposta reveal">
-      <h3>O OREX resolve isto de uma maneira simples.</h3>
-      <p>A informação entra <b>uma vez</b> e acompanha a obra do concurso à factura. O mapa que se
-      leu do concurso é o que se orçamenta, é o que se contrata, é o que se mede em obra e é o que
-      se factura. E quando alguém decide alguma coisa, <b>a decisão fica escrita ao lado do
-      número</b> — para a semana, para o ano que vem, para quem vier a seguir.</p>
-      <div class="hero-cta">
-        <a href="#modulos" class="btn btn-primary">Ver como <span class="arrow">&rarr;</span></a>
-        <a href="#beta" class="btn btn-ghost">Experimentar — 6 meses grátis</a>
+      <div class="resposta">
+        <h3>O OREX resolve isto de uma maneira simples.</h3>
+        <p>Não é falta de método — é o método estar repartido por sete ficheiros que não falam uns
+        com os outros. Aqui a informação entra <b>uma vez</b> e acompanha a obra do concurso à
+        factura, e cada decisão fica escrita <b>ao lado do número</b>.</p>
+        <div class="hero-cta">
+          <a href="#modulos" class="btn btn-primary">Ver como <span class="arrow">&rarr;</span></a>
+          <a href="#beta" class="btn btn-ghost">6 meses grátis</a>
+        </div>
       </div>
     </div>
   </div>
