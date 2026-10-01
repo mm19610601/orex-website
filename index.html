@@ -267,6 +267,33 @@
     body{font-size:16px;} .mini{display:none;}
     .titleblock{grid-template-columns:1fr;} .titleblock .cell{border-right:none;}
   }
+
+  /* -- 00 - O problema ------------------------------------------------- */
+  .percurso{list-style:none;margin:26px 0 0;padding:0;border-left:1px solid var(--line);}
+  .percurso li{display:flex;gap:16px;align-items:flex-start;padding:11px 0 11px 22px;position:relative;}
+  .percurso li::before{content:"";position:absolute;left:-4px;top:21px;width:7px;height:7px;
+    border-radius:50%;background:var(--paper);border:1px solid var(--steel);}
+  .percurso .n{font-family:"JetBrains Mono",monospace;font-size:.72rem;letter-spacing:.14em;
+    color:var(--steel);padding-top:3px;flex:0 0 auto;}
+  .percurso p{margin:0;font-size:1.02rem;line-height:1.55;color:var(--ink-2);max-width:62ch;}
+  .percurso p b{color:var(--ink);}
+  .percurso-fecho{margin:18px 0 0;font-size:1.06rem;line-height:1.5;color:var(--ink);max-width:56ch;
+    padding-left:22px;border-left:3px solid var(--ink);}
+  .prova{margin-top:34px;border:1px solid var(--line);border-radius:10px;padding:20px 22px;
+    background:var(--paper-2);}
+  .prova-cab{font-family:"JetBrains Mono",monospace;font-size:.7rem;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--steel);}
+  .prova-nums{display:flex;gap:34px;flex-wrap:wrap;margin:14px 0 10px;}
+  .prova-nums b{display:block;font-size:clamp(1.7rem,3.4vw,2.3rem);line-height:1.05;letter-spacing:-.02em;}
+  .prova-nums span{display:block;font-size:.86rem;color:var(--ink-2);margin-top:3px;max-width:22ch;}
+  .prova p{margin:0;font-size:.95rem;color:var(--ink-2);}
+  .resposta{margin-top:34px;background:var(--ink);color:var(--paper);border-radius:12px;padding:26px 26px 24px;}
+  .resposta h3{margin:0 0 10px;font-size:clamp(1.18rem,2.4vw,1.5rem);line-height:1.25;}
+  .resposta p{margin:0 0 18px;font-size:1.02rem;line-height:1.6;opacity:.86;max-width:66ch;}
+  .resposta p b{opacity:1;}
+  .resposta .btn-primary{background:var(--paper);color:var(--ink);}
+  .resposta .btn-ghost{color:var(--paper);border-color:rgba(255,255,255,.4);}
+  @media (max-width:560px){ .prova-nums{gap:20px;} }
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}.reveal{opacity:1;transform:none;}.draw{stroke-dashoffset:0;}}
 </style>
 </head>
@@ -278,6 +305,7 @@
   <div class="wrap nav-in">
     <img class="logo" src="data:image/png;base64,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" alt="OREX" />
     <div class="nav-links">
+      <a href="#problema">O problema</a>
       <a href="#modulos">O que faz</a>
       <a href="#porque">Porquê</a>
       <a href="#paraquem">Para quem</a>
@@ -416,6 +444,80 @@
      o site e nao encontra onde se regista. Isto e' a mesma ligacao, no sitio
      onde ela e' precisa: grande, no principio, e a explicar o que e' preciso
      ter a' mao antes de ir. -->
+<!-- ══════════════════════════════════════════════════════════════════════
+     00 · O PROBLEMA — a primeira coisa que se lê
+     ──────────────────────────────────────────────────────────────────────
+     Quem chega ao site não sabe o que é um MQT nem porque é que havia de
+     querer outro programa. Antes de dizer o que o OREX faz, diz-se o que
+     dói — em palavras que qualquer pessoa da construção reconhece como suas.
+     Os números da prova são medidos num dossier real, não são figura de estilo.
+     ══════════════════════════════════════════════════════════════════════ -->
+<section id="problema">
+  <div class="wrap">
+    <div class="tab reveal"><div class="l"><span class="sheet-no exp">00</span><span class="ttl">O problema</span></div><div class="r">Porque é que isto existe</div></div>
+
+    <div class="sec-head reveal">
+      <h2>A mesma informação, escrita quatro vezes.</h2>
+      <p class="lead">Uma empresa pequena concorre às mesmas obras que as grandes, com os mesmos
+      documentos e os mesmos prazos. O que lhe falta não é capacidade — é deixar de refazer o
+      mesmo trabalho em cada etapa.</p>
+    </div>
+
+    <ol class="percurso reveal">
+      <li><span class="n">01</span><p><b>O concurso chega</b> numa pasta com centenas de ficheiros,
+        com nomes que ninguém combinou.</p></li>
+      <li><span class="n">02</span><p><b>O mapa de quantidades é escrito outra vez</b>, num Excel —
+        porque o do concurso não serve para orçamentar.</p></li>
+      <li><span class="n">03</span><p><b>Os preços vivem noutro sítio</b>: as consultas no email, as
+        respostas em PDF, as composições na folha de alguém.</p></li>
+      <li><span class="n">04</span><p><b>Ganha-se a obra — e escreve-se tudo de novo</b>, agora para
+        quem a vai executar.</p></li>
+      <li><span class="n">05</span><p><b>No fim do mês a pergunta é sempre a mesma:</b> onde é que o
+        dinheiro se foi?</p></li>
+    </ol>
+
+    <p class="percurso-fecho reveal">Não é falta de método. É o método estar repartido por sete
+    ficheiros que não falam uns com os outros.</p>
+
+    <div class="values reveal">
+      <div class="value"><div class="vn">01</div><h3>Escreve-se quatro vezes</h3>
+        <p>Cada vez que a informação muda de ficheiro muda de mão — e cada passagem é um erro
+        possível que ninguém volta a conferir.</p></div>
+      <div class="value"><div class="vn">02</div><h3>As decisões perdem-se</h3>
+        <p>Porque é que este artigo leva 12% e não 8? A resposta ficou na cabeça de quem decidiu.
+        A folha só guardou o número.</p></div>
+      <div class="value"><div class="vn">03</div><h3>Só se sabe no fim</h3>
+        <p>A margem real aparece quando a obra acaba. Nessa altura já não há nada a fazer com ela.</p></div>
+    </div>
+
+    <!-- A PROVA. Numeros medidos a 01-10-2026 num dossier de concurso que o
+         programa leu: 1 095 documentos, 977 sem titulo util no nome (89%), e
+         143 com o mesmo conteudo entregue em duas pastas. Nao e exemplo
+         inventado, e por isso e que esta aqui. -->
+    <div class="prova reveal">
+      <div class="prova-cab">Medido num dossier de concurso real</div>
+      <div class="prova-nums">
+        <div><b>1 095</b><span>ficheiros numa entrega</span></div>
+        <div><b>89%</b><span>sem dizer no nome o que eram</span></div>
+        <div><b>143</b><span>entregues duas vezes</span></div>
+      </div>
+      <p>E alguém tem de arrumar isto à mão antes de se poder orçamentar.</p>
+    </div>
+
+    <div class="resposta reveal">
+      <h3>O OREX resolve isto de uma maneira simples.</h3>
+      <p>A informação entra <b>uma vez</b> e acompanha a obra do concurso à factura. O mapa que se
+      leu do concurso é o que se orçamenta, é o que se contrata, é o que se mede em obra e é o que
+      se factura. E quando alguém decide alguma coisa, <b>a decisão fica escrita ao lado do
+      número</b> — para a semana, para o ano que vem, para quem vier a seguir.</p>
+      <div class="hero-cta">
+        <a href="#modulos" class="btn btn-primary">Ver como <span class="arrow">&rarr;</span></a>
+        <a href="#beta" class="btn btn-ghost">Experimentar — 6 meses grátis</a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="obra-entrada" style="background:var(--ink,#0F0F0D);color:#fff;padding:18px 0">
   <div class="wrap" style="display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap">
     <div style="min-width:min(420px,100%)">
@@ -454,7 +556,7 @@
 
 <section id="porque">
   <div class="wrap">
-    <div class="tab reveal"><div class="l"><span class="sheet-no exp">00</span><span class="ttl">Porquê o OREX</span></div><div class="r">A ideia</div></div>
+    <div class="tab reveal"><div class="l"><span class="sheet-no exp">01</span><span class="ttl">Porquê o OREX</span></div><div class="r">A ideia</div></div>
     <div class="values reveal">
       <div class="value"><div class="vn">01</div><h3>Ferramentas de grande</h3><p>Orçamentação, BIM, obra e financeiro — o que as grandes construtoras têm, sem a estrutura delas.</p></div>
       <div class="value"><div class="vn">02</div><h3>IA a trabalhar por ti</h3><p>Lê, sugere, calcula e prepara documentos. A regra decide primeiro; a IA fica com o que sobra — e o custo diz-se antes de correr.</p></div>
@@ -465,7 +567,7 @@
 
 <section id="modulos">
   <div class="wrap">
-    <div class="tab reveal"><div class="l"><span class="sheet-no exp">01</span><span class="ttl">O que faz</span></div><div class="r">Capacidades</div></div>
+    <div class="tab reveal"><div class="l"><span class="sheet-no exp">02</span><span class="ttl">O que faz</span></div><div class="r">Capacidades</div></div>
     <div class="sec-head reveal">
       <h2>Do concurso à entrega.</h2>
       <p>Cada peça alimenta a seguinte: o concurso vira proposta, a proposta vira obra, a obra vira custos, e os documentos saem no fim.</p>
@@ -597,7 +699,7 @@
 
 <section id="ia">
   <div class="wrap">
-    <div class="tab reveal"><div class="l"><span class="sheet-no exp">02</span><span class="ttl">IA à tua medida</span></div><div class="r">Configurável</div></div>
+    <div class="tab reveal"><div class="l"><span class="sheet-no exp">03</span><span class="ttl">IA à tua medida</span></div><div class="r">Configurável</div></div>
     <div class="sec-head reveal">
       <h2>IA onde ela vale a pena — e a regra primeiro.</h2>
       <p>A conta que interessa não é quanta IA se usa. É quanto trabalho se faz sem ter de a chamar — e saber o preço antes de carregar no botão.</p>
@@ -637,7 +739,7 @@
 
 <section id="paraquem">
   <div class="wrap">
-    <div class="tab reveal"><div class="l"><span class="sheet-no exp">03</span><span class="ttl">Para quem</span></div><div class="r">Segmento</div></div>
+    <div class="tab reveal"><div class="l"><span class="sheet-no exp">04</span><span class="ttl">Para quem</span></div><div class="r">Segmento</div></div>
     <div class="target reveal">
       <div>
         <div class="band-num exp">1&ndash;8 M&euro;<small>Faturação anual</small></div>
@@ -662,7 +764,7 @@
 
 <section id="evolucao">
   <div class="wrap">
-    <div class="tab reveal"><div class="l"><span class="sheet-no exp">04</span><span class="ttl">Evolução</span></div><div class="r">Produto vivo</div></div>
+    <div class="tab reveal"><div class="l"><span class="sheet-no exp">05</span><span class="ttl">Evolução</span></div><div class="r">Produto vivo</div></div>
     <div class="sec-head reveal">
       <h2>Não é uma promessa. Já está a funcionar — e cresce todas as semanas.</h2>
       <p>O OREX está em uso real e ganha capacidades novas quase todos os dias. Os seis módulos lá em cima são só o cabeçalho: por baixo há muito mais, já instalado e a ser afinado com quem o usa.</p>
@@ -676,8 +778,8 @@
           <div class="sub">a correr em obra, hoje</div>
           <div class="split">
             <div><div class="k">Arranque</div><div class="n">6 jun</div></div>
-            <div><div class="k">Semanas</div><div class="n">12</div></div>
-            <div><div class="k">Versões</div><div class="n">155+</div></div>
+            <div><div class="k">Semanas</div><div class="n">17</div></div>
+            <div><div class="k">Versões</div><div class="n">215+</div></div>
             <div><div class="k">Plataformas</div><div class="n">3</div></div>
           </div>
         </div>
@@ -702,7 +804,12 @@
 
       <div>
         <div class="vlog">
-          <div class="row cur"><span class="v">1.157</span><span class="d">A leitura das peças propõe o papel de cada uma — e o papel arruma o dossier</span><span class="dt">ago · agora</span></div>
+          <div class="row cur"><span class="v">1.216</span><span class="d">A decisão da imputação atravessa do estudo para a obra</span><span class="dt">out · agora</span></div>
+          <div class="row"><span class="v">1.213</span><span class="d">Encargos Contratuais — um coeficiente próprio, aplicado uma vez só</span><span class="dt">30 set</span></div>
+          <div class="row"><span class="v">1.211</span><span class="d">O estaleiro e a SST passam a ser a lista de cada empresa, e imputam-se por tipo</span><span class="dt">29 set</span></div>
+          <div class="row"><span class="v">1.210</span><span class="d">A passagem do estudo para a obra, elemento a elemento — e a obra em paridade com a orçamentação</span><span class="dt">28 set</span></div>
+          <div class="row"><span class="v">1.194</span><span class="d">A árvore do projectista também se lê: 94% de um concurso arrumado sozinho</span><span class="dt">4 set</span></div>
+          <div class="row"><span class="v">1.157</span><span class="d">A leitura das peças propõe o papel de cada uma — e o papel arruma o dossier</span><span class="dt">27 ago</span></div>
           <div class="row"><span class="v">1.156</span><span class="d">O código do concurso fica escrito, e um código nosso tem de se justificar</span><span class="dt">27 ago</span></div>
           <div class="row"><span class="v">1.154</span><span class="d">Leitura das peças — o aviso com o custo, antes de a corrida começar</span><span class="dt">26 ago</span></div>
           <div class="row"><span class="v">1.150</span><span class="d">O mapa de quantidades entra inteiro: as notas viram requisitos e as divergências ganham percentagem</span><span class="dt">26 ago</span></div>
@@ -737,7 +844,7 @@
 
 <section id="beta">
   <div class="wrap">
-    <div class="tab reveal"><div class="l"><span class="sheet-no exp">05</span><span class="ttl">Programa-piloto</span></div><div class="r">Descarrega e experimenta</div></div>
+    <div class="tab reveal"><div class="l"><span class="sheet-no exp">06</span><span class="ttl">Programa-piloto</span></div><div class="r">Descarrega e experimenta</div></div>
     <div class="offer-card reveal">
       <div class="offer-left">
         <span class="eyebrow">Convite a empresas de construção</span>
@@ -776,7 +883,7 @@
       <div class="cell brandcell"><img class="logo" src="data:image/png;base64,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" alt="OREX" /><div class="k">Next-Gen Construction</div><div class="v mono">Portugal · 2026</div></div>
       <div class="cell"><div class="k">Estado</div><div class="v" id="verFoot">Beta · v1.157</div></div>
       <div class="cell"><div class="k">Escala</div><div class="v">1:1</div></div>
-      <div class="cell"><div class="k">Folha</div><div class="v">01 / 05</div></div>
+      <div class="cell"><div class="k">Folha</div><div class="v">01 / 06</div></div>
       <div class="cell"><div class="k">Contacto</div><div class="v mono">beta@orexerp.pt</div></div>
     </div>
   </div>
