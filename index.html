@@ -553,58 +553,19 @@
   <div class="wrap">
     <div class="tab reveal"><div class="l"><span class="sheet-no exp">02</span><span class="ttl">O que faz</span></div><div class="r">Capacidades</div></div>
     <div class="sec-head reveal">
-      <h2>Do concurso à entrega.</h2>
-      <p>Cada peça alimenta a seguinte: o concurso vira proposta, a proposta vira obra, a obra vira custos, e os documentos saem no fim.</p>
+      <h2>Do concurso à conta final.</h2>
+      <p>Cada peça alimenta a seguinte: o concurso vira proposta, a proposta vira obra, a obra vira custos — e o dinheiro fecha o círculo, das facturas que entram à revisão de preços e à conta final.</p>
     </div>
     <div class="modules reveal">
       <div class="mod"><div class="top"><span class="code">ORÇAMENTOS</span><span class="idx">01</span></div><h3>Orçamentação</h3><p>Composições, valores, KPIs e proposta em PDF. Importa de Excel, PDF e BIM.</p></div>
-      <div class="mod"><div class="top"><span class="code">OBRA</span><span class="idx">02</span></div><h3>Gestão de obra</h3><p>Planeamento (Gantt, curva-S), frentes, autos, custos, horas e tesouraria.</p></div>
+      <div class="mod"><div class="top"><span class="code">OBRA</span><span class="idx">02</span></div><h3>Gestão de obra</h3><p>Painel da obra, planeamento (Gantt, curva-S), frentes, autos, custos, horas e tesouraria.</p></div>
       <div class="mod"><div class="top"><span class="code">BIM</span><span class="idx">03</span></div><h3>BIM 4D/5D</h3><p>Viewer IFC no browser, quantidades, COBie e objeto IFC ligado ao artigo da medição.</p></div>
       <div class="mod"><div class="top"><span class="code">FORNECEDORES</span><span class="idx">04</span></div><h3>Fornecedores</h3><p>Cadastro e classificação por categoria, com consultas, cotações e encomendas.</p></div>
       <div class="mod"><div class="top"><span class="code">SEGURANÇA</span><span class="idx">05</span></div><h3>Segurança</h3><p>Planos e documentos de segurança e saúde a partir dos dados da obra.</p></div>
       <div class="mod"><div class="top"><span class="code">FISCALIZAÇÃO</span><span class="idx">06</span></div><h3>Fiscalização</h3><p>Autos, reuniões, mapas e rastreabilidade no formato que a fiscalização espera.</p></div>
-
-      <div class="band reveal" id="financeiro">
-        <div>
-          <div class="code">FINANCEIRO</div>
-          <h3>Faturação, pagamentos e contas correntes.</h3>
-          <p>Faturas a clientes, faturas e pagamentos a fornecedores, contas correntes (de cliente e de fornecedor), tesouraria e créditos — ligados às obras e às encomendas.</p>
-          <p>E o que tens na contabilidade não se perde: o OREX <strong>produz os documentos ou integra-se com os programas de contabilidade do mercado</strong> (importa/exporta).</p>
-          <p class="note">A integração com cada programa de contabilidade é configurada caso a caso.</p>
-        </div>
-        <div class="diag">
-          <div class="ledger">
-            <div><span>Faturas a clientes</span><b>&#10003;</b></div>
-            <div><span>Faturas de fornecedores</span><b>&#10003;</b></div>
-            <div><span>Pagamentos</span><b>&#10003;</b></div>
-            <div><span>Contas correntes</span><b>&#10003;</b></div>
-            <div><span>Tesouraria</span><b>&#10003;</b></div>
-            <div><span>Integração contabilidade</span><b>&#8646;</b></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="band reveal" id="localizacao">
-        <div>
-          <div class="code">LOCALIZAÇÃO / RTLS</div>
-          <h3>Onde está cada pessoa, em tempo real.</h3>
-          <p><strong>RTLS</strong> (Real-Time Locating System) mostra, a cada momento, a posição de pessoas, equipamentos e materiais na obra — para segurança (zonas de risco, evacuações), proteger equipamento e medir deslocações.</p>
-          <p class="note">Há localização de pessoas integrada nas obras (por GPS) num mapa; a seguir, equipamentos e materiais e o RTLS interior (antenas).</p>
-        </div>
-        <div class="diag">
-          <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Antenas nos cantos da obra a localizar etiquetas em pessoas e equipamentos">
-            <rect x="22" y="20" width="276" height="150" fill="none" stroke="var(--line)" stroke-width="1.3"/>
-            <g stroke="var(--line)" stroke-width="1" stroke-dasharray="3 4" fill="none"><line x1="44" y1="44" x2="168" y2="112"/><line x1="276" y1="44" x2="168" y2="112"/><line x1="44" y1="146" x2="168" y2="112"/></g>
-            <g transform="translate(44,44)"><rect x="-3" y="-3" width="6" height="6" fill="var(--ink)"/><circle r="9" fill="none" stroke="var(--ink)" stroke-width="1.2" opacity="0.55"/><circle r="15" fill="none" stroke="var(--steel)" stroke-width="1" opacity="0.45"/></g>
-            <g transform="translate(276,44)"><rect x="-3" y="-3" width="6" height="6" fill="var(--ink)"/><circle r="9" fill="none" stroke="var(--ink)" stroke-width="1.2" opacity="0.55"/><circle r="15" fill="none" stroke="var(--steel)" stroke-width="1" opacity="0.45"/></g>
-            <g transform="translate(44,146)"><rect x="-3" y="-3" width="6" height="6" fill="var(--ink)"/><circle r="9" fill="none" stroke="var(--ink)" stroke-width="1.2" opacity="0.55"/><circle r="15" fill="none" stroke="var(--steel)" stroke-width="1" opacity="0.45"/></g>
-            <circle cx="168" cy="112" r="6" fill="var(--ink)"/><circle cx="236" cy="80" r="5" fill="var(--ink)"/>
-            <text x="168" y="132" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="var(--ink-2)">PESSOA</text>
-            <text x="236" y="70" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="var(--ink-2)">EQUIP.</text>
-          </svg>
-          <div class="lg"><span><b>&#9632;</b> Antena</span><span><b>&#9679;</b> Etiqueta</span></div>
-        </div>
-      </div>
+      <div class="mod"><div class="top"><span class="code">FINANCEIRO</span><span class="idx">07</span></div><h3>Financeiro</h3><p>As facturas que entram e as que saem, conferência, contas correntes e tesouraria.</p></div>
+      <div class="mod"><div class="top"><span class="code">REVISÃO</span><span class="idx">08</span></div><h3>Revisão de preços</h3><p>Índices do IMPIC, fórmulas-tipo e a conta da revisão, obra a obra.</p></div>
+      <div class="mod"><div class="top"><span class="code">DOCUMENTOS</span><span class="idx">09</span></div><h3>Dossier da obra</h3><p>Peças, revisões e emissões num sítio só, com códigos ISO 19650.</p></div>
 
       <div class="band reveal" id="concursos">
         <div>
@@ -668,6 +629,73 @@
         </div>
       </div>
 
+      <div class="band reveal" id="financeiro">
+        <div>
+          <div class="code">FINANCEIRO</div>
+          <h3>O dinheiro da obra, nos dois sentidos.</h3>
+          <p><strong>O que entra:</strong> a factura do fornecedor chega por email ou por fotografia e é lida — pelo <strong>QR</strong> quando o tem, pela regra a seguir, e só o que sobra vai à IA. Fica numa folha de conferência onde se confirma o emitente, as linhas e o imposto, imputa-se <strong>à obra e ao artigo</strong>, e passa a contar no custo.</p>
+          <p><strong>O que sai:</strong> a factura ao dono de obra <strong>nasce dos autos</strong>, com o cliente e a conta certos e as duas retenções pelo nome que têm. Sai em PDF — ou em CSV para a contabilidade.</p>
+          <p>Contas correntes de cliente e de fornecedor, pagamentos e tesouraria, ligados às obras e às encomendas. E o que tens na contabilidade não se perde: o OREX <strong>produz os documentos ou integra-se com os programas do mercado</strong>.</p>
+          <p class="note">A integração com cada programa de contabilidade é configurada caso a caso.</p>
+        </div>
+        <div class="diag">
+          <div class="ledger">
+            <div><span>Facturas que entram</span><b>&#10003;</b></div>
+            <div><span>Leitura do QR</span><b>&#10003;</b></div>
+            <div><span>Conferência linha a linha</span><b>&#10003;</b></div>
+            <div><span>Imputação à obra e ao artigo</span><b>&#10003;</b></div>
+            <div><span>Facturas ao dono de obra</span><b>&#10003;</b></div>
+            <div><span>Contas correntes e tesouraria</span><b>&#10003;</b></div>
+            <div><span>CSV para a contabilidade</span><b>&#10003;</b></div>
+            <div><span>Integração contabilidade</span><b>&#8646;</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="band reveal" id="revisao">
+        <div>
+          <div class="code">REVISÃO DE PREÇOS</div>
+          <h3>A revisão de preços deixa de ser uma folha à parte.</h3>
+          <p>Os <strong>índices do IMPIC</strong> estão lá dentro e actualizam-se sozinhos: <strong>96 séries</strong> e <strong>17 878 valores, de 2010 a 2026</strong>. As <strong>23 fórmulas-tipo</strong>, com as suas <strong>305 parcelas</strong>, vêm feitas.</p>
+          <p>A conta faz-se <strong>por obra</strong>: o coeficiente de cada mês, os acertos, a conta final — e um <strong>rascunho de factura com o cálculo justificativo</strong>, para se ver de onde saiu cada número.</p>
+          <p>E a lei não se perde de vista. O <strong>registo da legislação</strong> guarda os diplomas, as alterações que lhes foram feitas e as regras que deles saem; confere-os sozinho todas as semanas e <strong>avisa quando alguma coisa muda</strong>. A referência legal fica congelada na revisão que seguiu.</p>
+          <p class="note">Os índices são os publicados pelo IMPIC. O que o ecrã mostra é o que a fonte já publicou — e o mês que ainda não saiu diz que ainda não saiu, em vez de dar erro.</p>
+        </div>
+        <div class="diag">
+          <div class="ledger">
+            <div><span>Séries de índices</span><b>96</b></div>
+            <div><span>Valores, 2010&ndash;2026</span><b>17 878</b></div>
+            <div><span>Fórmulas-tipo</span><b>23</b></div>
+            <div><span>Parcelas das fórmulas</span><b>305</b></div>
+            <div><span>Cálculo por obra</span><b>&#10003;</b></div>
+            <div><span>Factura de revisão</span><b>&#10003;</b></div>
+            <div><span>Aviso quando a lei muda</span><b>&#10003;</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="band reveal" id="localizacao">
+        <div>
+          <div class="code">LOCALIZAÇÃO / RTLS</div>
+          <h3>Onde está cada pessoa, em tempo real.</h3>
+          <p><strong>RTLS</strong> (Real-Time Locating System) mostra, a cada momento, a posição de pessoas, equipamentos e materiais na obra — para segurança (zonas de risco, evacuações), proteger equipamento e medir deslocações.</p>
+          <p class="note">Há localização de pessoas integrada nas obras (por GPS) num mapa; a seguir, equipamentos e materiais e o RTLS interior (antenas).</p>
+        </div>
+        <div class="diag">
+          <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Antenas nos cantos da obra a localizar etiquetas em pessoas e equipamentos">
+            <rect x="22" y="20" width="276" height="150" fill="none" stroke="var(--line)" stroke-width="1.3"/>
+            <g stroke="var(--line)" stroke-width="1" stroke-dasharray="3 4" fill="none"><line x1="44" y1="44" x2="168" y2="112"/><line x1="276" y1="44" x2="168" y2="112"/><line x1="44" y1="146" x2="168" y2="112"/></g>
+            <g transform="translate(44,44)"><rect x="-3" y="-3" width="6" height="6" fill="var(--ink)"/><circle r="9" fill="none" stroke="var(--ink)" stroke-width="1.2" opacity="0.55"/><circle r="15" fill="none" stroke="var(--steel)" stroke-width="1" opacity="0.45"/></g>
+            <g transform="translate(276,44)"><rect x="-3" y="-3" width="6" height="6" fill="var(--ink)"/><circle r="9" fill="none" stroke="var(--ink)" stroke-width="1.2" opacity="0.55"/><circle r="15" fill="none" stroke="var(--steel)" stroke-width="1" opacity="0.45"/></g>
+            <g transform="translate(44,146)"><rect x="-3" y="-3" width="6" height="6" fill="var(--ink)"/><circle r="9" fill="none" stroke="var(--ink)" stroke-width="1.2" opacity="0.55"/><circle r="15" fill="none" stroke="var(--steel)" stroke-width="1" opacity="0.45"/></g>
+            <circle cx="168" cy="112" r="6" fill="var(--ink)"/><circle cx="236" cy="80" r="5" fill="var(--ink)"/>
+            <text x="168" y="132" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="var(--ink-2)">PESSOA</text>
+            <text x="236" y="70" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="var(--ink-2)">EQUIP.</text>
+          </svg>
+          <div class="lg"><span><b>&#9632;</b> Antena</span><span><b>&#9679;</b> Etiqueta</span></div>
+        </div>
+      </div>
+
       <div class="mod feature">
         <div>
           <div class="top"><span class="code">PROCUREMENT AUTÓNOMO</span></div>
@@ -706,7 +734,7 @@
         <div class="code">CUSTO</div>
         <h3>O preço diz-se antes</h3>
         <p>Antes de correr, a aplicação diz quantas operações vão à IA e quanto custam <strong>no pior caso</strong> — e dá sempre dois botões: com IA, ou só pela regra, que não custa nada. Depois, o custo aparece em mais três sítios.</p>
-        <div class="cost"><span class="big">24,76&nbsp;$</span><span class="lbl">382 chamadas · três meses de uso real</span></div>
+        <div class="cost"><span class="big">50,77&nbsp;$</span><span class="lbl">2&nbsp;161 chamadas · seis meses de uso real</span></div>
       </div>
     </div>
 
@@ -751,25 +779,25 @@
     <div class="tab reveal"><div class="l"><span class="sheet-no exp">05</span><span class="ttl">Evolução</span></div><div class="r">Produto vivo</div></div>
     <div class="sec-head reveal">
       <h2>Não é uma promessa. Já está a funcionar — e cresce todas as semanas.</h2>
-      <p>O OREX está em uso real e ganha capacidades novas quase todos os dias. Os seis módulos lá em cima são só o cabeçalho: por baixo há muito mais, já instalado e a ser afinado com quem o usa.</p>
+      <p>O OREX está em uso real e ganha capacidades novas quase todos os dias. Os nove módulos lá em cima são só o cabeçalho: por baixo há muito mais, já instalado e a ser afinado com quem o usa.</p>
     </div>
 
     <div class="evo reveal">
       <div>
         <div class="now">
           <div class="rel">Versão distribuída</div>
-          <div class="big" id="verBig">1.157<span class="u"> .0</span></div>
+          <div class="big" id="verBig">1.262<span class="u"> .0</span></div>
           <div class="sub">a correr em obra, hoje</div>
           <div class="split">
             <div><div class="k">Arranque</div><div class="n">6 jun</div></div>
-            <div><div class="k">Semanas</div><div class="n">17</div></div>
-            <div><div class="k">Versões</div><div class="n">215+</div></div>
+            <div><div class="k">Semanas</div><div class="n">24</div></div>
+            <div><div class="k">Versões</div><div class="n">260+</div></div>
             <div><div class="k">Plataformas</div><div class="n">3</div></div>
           </div>
         </div>
 
         <div class="caps">
-          <div class="lbl">Já instalado, além dos 6 módulos</div>
+          <div class="lbl">Já instalado, além dos 9 módulos</div>
           <div class="chips">
             <span class="chip">Consultas / RFQ</span><span class="chip">Cotações</span><span class="chip">Preços Padrão</span>
             <span class="chip">Gestão Contratual</span><span class="chip">Análise de Riscos IA</span><span class="chip">Planeamento 4D</span>
@@ -782,13 +810,31 @@
             <span class="chip">Autos por email</span><span class="chip">Agenda</span>
             <span class="chip">Leitura das peças</span><span class="chip">Mapeamento de mapas</span><span class="chip">Requisitos do concurso</span>
             <span class="chip">Divergências de medição</span><span class="chip">Medições por artigo</span><span class="chip">Peças da proposta</span>
+            <span class="chip">Facturas que entram e que saem</span><span class="chip">Conferência de facturas</span><span class="chip">Leitura do QR</span>
+            <span class="chip">Contas correntes</span><span class="chip">Tesouraria</span><span class="chip">CSV para a contabilidade</span>
+            <span class="chip">Revisão de preços</span><span class="chip">Índices do IMPIC</span><span class="chip">Registo da legislação</span>
+            <span class="chip">Painel da obra</span><span class="chip">Encargos contratuais</span><span class="chip">OREX-WBS</span>
+            <span class="chip">Impressões do estudo</span>
           </div>
         </div>
       </div>
 
       <div>
         <div class="vlog">
-          <div class="row cur"><span class="v">1.216</span><span class="d">A decisão da imputação atravessa do estudo para a obra</span><span class="dt">out · agora</span></div>
+          <div class="row cur"><span class="v">1.262</span><span class="d">O registo da legislação: a aplicação confere sozinha se a lei da revisão mudou — e avisa</span><span class="dt">23 nov · agora</span></div>
+          <div class="row"><span class="v">1.261</span><span class="d">Revisão de preços em Tabelas: os índices, as fórmulas-tipo e as simulações</span><span class="dt">22 nov</span></div>
+          <div class="row"><span class="v">1.260</span><span class="d">A revisão de preços da obra: o cálculo, os acertos e o rascunho de factura</span><span class="dt">21 nov</span></div>
+          <div class="row"><span class="v">1.259</span><span class="d">O boletim de materiais enche-se a partir da lista da obra</span><span class="dt">19 nov</span></div>
+          <div class="row"><span class="v">1.256</span><span class="d">A factura reconhece a encomenda, e o recurso liga-se ao produto</span><span class="dt">19 nov</span></div>
+          <div class="row"><span class="v">1.255</span><span class="d">O painel da obra em seis blocos — e nenhum zero a fingir de resposta</span><span class="dt">17 nov</span></div>
+          <div class="row"><span class="v">1.254</span><span class="d">As portas fechadas: o que se alcançava por fora da aplicação deixa de se alcançar</span><span class="dt">17 nov</span></div>
+          <div class="row"><span class="v">1.253</span><span class="d">A factura ao dono de obra nasce dos autos, e abre na lista geral</span><span class="dt">16 nov</span></div>
+          <div class="row"><span class="v">1.252</span><span class="d">A fase é a única verdade da obra, e «comprometido» é o que está encomendado</span><span class="dt">16 nov</span></div>
+          <div class="row"><span class="v">1.251</span><span class="d">A conferência das facturas que entram: ler, imputar à obra e validar</span><span class="dt">12 nov</span></div>
+          <div class="row"><span class="v">1.250</span><span class="d">A leitura das peças arruma pela sigla, e o cartão manda no lote</span><span class="dt">3 nov</span></div>
+          <div class="row"><span class="v">1.246</span><span class="d">As impressões do estudo — MQT, medições, composição e recursos</span><span class="dt">2 nov</span></div>
+          <div class="row"><span class="v">1.230</span><span class="d">A base de dados reconstrói-se do git, com diferença zero</span><span class="dt">11 out</span></div>
+          <div class="row"><span class="v">1.216</span><span class="d">A decisão da imputação atravessa do estudo para a obra</span><span class="dt">1 out</span></div>
           <div class="row"><span class="v">1.213</span><span class="d">Encargos Contratuais — um coeficiente próprio, aplicado uma vez só</span><span class="dt">30 set</span></div>
           <div class="row"><span class="v">1.211</span><span class="d">O estaleiro e a SST passam a ser a lista de cada empresa, e imputam-se por tipo</span><span class="dt">29 set</span></div>
           <div class="row"><span class="v">1.210</span><span class="d">A passagem do estudo para a obra, elemento a elemento — e a obra em paridade com a orçamentação</span><span class="dt">28 set</span></div>
@@ -820,7 +866,7 @@
           <div class="row"><span class="v">1.07</span><span class="d">Consultas (RFQ) e fornecedores multi-empresa</span><span class="dt">15 jun</span></div>
           <div class="row"><span class="v">1.01</span><span class="d">Primeira versão em obra: presença, versões, sessões</span><span class="dt">7 jun</span></div>
         </div>
-        <div class="vlog-note">Os marcos. Entre eles vão mais de cem versões — correcções e afinações a pedido de quem usa.</div>
+        <div class="vlog-note">Os marcos. Entre eles vão mais de duzentas versões — correcções e afinações a pedido de quem usa.</div>
       </div>
     </div>
   </div>
@@ -854,7 +900,7 @@
           </div>
           <button type="submit" class="btn btn-primary">Pedir acesso ao OREX <span class="arrow">&rarr;</span></button>
           <div class="form-msg" id="formMsg" role="status" aria-live="polite"></div>
-          <p class="fineprint"><span id="verFine">OREX v1.157 · Windows 64-bit · ~93 MB</span> · Linux e macOS a caminho.<br /><strong>Validamos cada pedido</strong> e enviamos o link de descarga por email — assim controlamos quem testa o OREX.</p>
+          <p class="fineprint"><span id="verFine">OREX v1.262 · Windows 64-bit · ~93 MB</span> · Linux e macOS a caminho.<br /><strong>Validamos cada pedido</strong> e enviamos o link de descarga por email — assim controlamos quem testa o OREX.</p>
         </form>
       </div>
     </div>
@@ -865,7 +911,7 @@
   <div class="wrap">
     <div class="titleblock">
       <div class="cell brandcell"><img class="logo" src="data:image/png;base64,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" alt="OREX" /><div class="k">Next-Gen Construction</div><div class="v mono">Portugal · 2026</div></div>
-      <div class="cell"><div class="k">Estado</div><div class="v" id="verFoot">Beta · v1.157</div></div>
+      <div class="cell"><div class="k">Estado</div><div class="v" id="verFoot">Beta · v1.262</div></div>
       <div class="cell"><div class="k">Escala</div><div class="v">1:1</div></div>
       <div class="cell"><div class="k">Folha</div><div class="v">01 / 06</div></div>
       <div class="cell"><div class="k">Contacto</div><div class="v mono">beta@orexerp.pt</div></div>
